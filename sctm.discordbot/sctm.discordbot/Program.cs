@@ -59,13 +59,13 @@ namespace sctm.discordbot
                 var _channelId = e.Channel.Id;
                 var _guildName = e.Guild.Name;
                 var _guildId = e.Guild.Id;
+                var _botAvatar = discord.CurrentUser.AvatarUrl;
 
                 if (e.Message.Attachments != null && e.Message.Attachments.Any())
                 {
                     foreach (var item in e.Message.Attachments)
                     {
                         await e.Message.RespondAsync($"processing: {item.FileName} for {e.Message.Author.Username}...");
-
 
                         var _res = await _client.GetAsync(item.Url);
 
@@ -89,79 +89,21 @@ namespace sctm.discordbot
                                 break;
                             case connectors.azureComputerVision.models.ScreenShotTypes.TradeConsole_BUYConfirm:
                                 var _dataTradeBuyConfirm = (connectors.azureComputerVision.models.Terminals.Trade.Confirm)_uploadResult.result;
-
-                                _embed = new DiscordEmbedBuilder
-                                {
-                                    ThumbnailUrl = item.Url,
-                                    Color = DiscordColor.Blue,
-                                    Title = "Processed Trade Terminal BUY Confirm screen",
-                                }
-                                .AddField("Member", $"{e.Author.Username}#{e.Author.Discriminator}", true)
-                                .AddField($"Server", _guildName, true)
-                                .AddField($"Channel", _channelName, true)
-                                .AddField("Ship", _dataTradeBuyConfirm.ShipIdentifier, true)
-                                .AddField("Total Value", _dataTradeBuyConfirm.Item.TransactionCost.ToString(), false)
-                                .AddField($"**{_dataTradeBuyConfirm.Item.Name}** ({_dataTradeBuyConfirm.Item.PricePerUnit} aUEC)", $"{_dataTradeBuyConfirm.Item.Quantity} units", true);
-                                await e.Message.RespondAsync(embed: _embed);
+                                await e.Message.RespondAsync(embed: Embeds.TradeBUYConfirm(_dataTradeBuyConfirm, e, item, _botAvatar));
                                 break;
                             case connectors.azureComputerVision.models.ScreenShotTypes.TradeConsole_SELLConfirm:
                                 var _dataTradeSellConfirm = (connectors.azureComputerVision.models.Terminals.Trade.Confirm)_uploadResult.result;
-
-                                _embed = new DiscordEmbedBuilder
-                                {
-                                    ThumbnailUrl = item.Url,
-                                    Color = DiscordColor.Blue,
-                                    Title = "Processed Trade Terminal SELL Confirm screen",
-                                }
-                                .AddField("Member", $"{e.Author.Username}#{e.Author.Discriminator}", true)
-                                .AddField($"Server", _guildName, true)
-                                .AddField($"Channel", _channelName, true)
-                                .AddField("Ship", _dataTradeSellConfirm.ShipIdentifier, true)
-                                .AddField("Total Value", _dataTradeSellConfirm.Item.TransactionCost.ToString(), false)
-                                .AddField($"**{_dataTradeSellConfirm.Item.Name}** ({_dataTradeSellConfirm.Item.PricePerUnit} aUEC)", $"{_dataTradeSellConfirm.Item.Quantity} units", true);
-                                await e.Message.RespondAsync(embed: _embed);
+                                await e.Message.RespondAsync(embed: Embeds.TradeSELLConfirm(_dataTradeSellConfirm, e, item, _botAvatar));
                                 break;
                             case connectors.azureComputerVision.models.ScreenShotTypes.FleetManager:
                                 break;
                             case connectors.azureComputerVision.models.ScreenShotTypes.RefineryTerminal_SELL:
-
                                 var _dataRefinerySell = (connectors.azureComputerVision.models.Terminals.Refinery.Sell)_uploadResult.result;
-
-                                _embed = new DiscordEmbedBuilder
-                                {
-                                    ThumbnailUrl = item.Url,
-                                    Color = DiscordColor.Yellow,
-                                    Title = "Processed Refinery Terminal SELL screen",
-                                }
-                                .AddField("Member", $"{e.Author.Username}#{e.Author.Discriminator}", true)
-                                .AddField($"Server", _guildName, true)
-                                .AddField($"Channel", _channelName, true)
-                                .AddField("Ship", _dataRefinerySell.ShipIdentifier, true)
-                                .AddField("Items available to sell", _dataRefinerySell.Items.Count.ToString(), true)
-                                .AddField("Total Value", _dataRefinerySell.TotalValue.ToString(), false);
-
-                                foreach (var availItem in _dataRefinerySell.Items)
-                                {
-                                    _embed.AddField($"**{availItem.Name}** ({availItem.Amount.ToString()}%)", availItem.Value.ToString(), true);
-                                }
-                                await e.Message.RespondAsync(embed: _embed);
+                                await e.Message.RespondAsync(embed: Embeds.RefinerySellEmbed(_dataRefinerySell, e, item, _botAvatar));
                                 break;
                             case connectors.azureComputerVision.models.ScreenShotTypes.RefineryTerminal_SELLConfirm:
                                 var _dataRefineryConfirm = (connectors.azureComputerVision.models.Terminals.Refinery.Confirm)_uploadResult.result;
-
-                                _embed = new DiscordEmbedBuilder
-                                {
-                                    ThumbnailUrl = item.Url,
-                                    Color = DiscordColor.Yellow,
-                                    Title = "Processed Refinery Terminal SELL screen",
-                                }
-                                .AddField("Member", $"{e.Author.Username}#{e.Author.Discriminator}", true)
-                                .AddField($"Server", _guildName, true)
-                                .AddField($"Channel", _channelName, true)
-                                .AddField("Ship", _dataRefineryConfirm.ShipIdentifier, true)
-                                .AddField("Total Value", _dataRefineryConfirm.TotalTransactionCost.ToString(), true);
-
-                                await e.Message.RespondAsync(embed: _embed);
+                                await e.Message.RespondAsync(embed: Embeds.RefinerySellConfirm(_dataRefineryConfirm,e,item,_botAvatar));
                                 break;
                             default:
                                 break;
