@@ -6,3 +6,5 @@
 /sctm.discordbot/sctm.discordbot/bin/Debug/netcoreapp3.1
 /sctm.discordbot/sctm.discordbot/obj
 /sctm.discordbot/sctm.discordbot/appsettings.development.json
+/sctm.discordbot/sctm.discordbot/bin/Release/netcoreapp3.1
+/sctm.discordbot/sctm.discordbot/Properties/PublishProfiles
