@@ -17,6 +17,8 @@ namespace sctm.discordbot
         private static HttpClient _client;
         static DiscordClient discord;
 
+        const string commandPreface = "~roo";
+
         public static IConfigurationRoot Configuration { get; private set; }
 
         static void Main(string[] args)
@@ -36,10 +38,6 @@ namespace sctm.discordbot
             DirectoryInfo _assemblyLocation = new FileInfo(Assembly.GetCallingAssembly().Location).Directory;
             var _logFilePath = Configuration["logFilePath"].Replace(".log", $"{DateTime.Now.ToString("dd-MMM-yyyy")}.log");
             var _logger = new FileLogger("discortBot", Environment.MachineName, "Program", _logFilePath);
-
-
-            _client = new HttpClient();
-            DiscordEmbedBuilder _embed;
 
             _logger.WriteEntry(new logging.Models.LogEntry
             {
@@ -61,28 +59,13 @@ namespace sctm.discordbot
                 Message = "Configuring computer vision connector"
             });
 
-            var _uploader = new AzureComputerVisionRepository(new AzureConfiguration
-            {
-                SubscriptionKey = Configuration["Azure:SubscriptionKey"],
-                Endpoint = Configuration["Azure:Endpoint"]
-            });
 
-            discord.MessageCreated += async e =>
-            {                
-                if (e.Message.Content.ToLower().StartsWith("ping"))
-                {
-                    _logger.WriteEntry(new logging.Models.LogEntry
-                    {
-                        Action = _logAction,
-                        Level = Microsoft.Extensions.Logging.LogLevel.Information,
-                        Message = $"Processing message: {e.Message.Content}"
-                    });
+            var _commands = new Commands(commandPreface, Configuration, _logger, discord);
+            _commands.AddCommands_Ping();
+            _commands.AddCommands_DM();
+            _commands.AddCommands_Hello();
 
-                    await e.Message.RespondAsync("pong!");
-                }
-            };
 
-            
 
             await discord.ConnectAsync();
             await Task.Delay(-1);
