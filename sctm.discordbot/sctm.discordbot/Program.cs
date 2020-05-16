@@ -19,12 +19,10 @@ namespace sctm.discordbot
 {
     class Program
     {
-        private static HttpClient _client;
         static DiscordClient discord;
         private static CommandsNextModule commands;
         private static CommandsNextConfiguration ccfg;
         private static FileLogger logger;
-        const string commandPreface = "~roo";
 
         public static IConfigurationRoot Configuration { get; private set; }
 
@@ -32,6 +30,7 @@ namespace sctm.discordbot
         {
             Configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile("appsettings.global.json", optional: true, reloadOnChange: true)
                 .AddJsonFile("appsettings.development.json", optional: true, reloadOnChange: true)
                 .Build();
 

@@ -8,3 +8,4 @@
 /sctm.discordbot/sctm.discordbot/appsettings.development.json
 /sctm.discordbot/sctm.discordbot/bin/Release/netcoreapp3.1
 /sctm.discordbot/sctm.discordbot/Properties/PublishProfiles
+/sctm.discordbot/sctm.discordbot/appsettings.global.json
