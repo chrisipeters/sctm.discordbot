@@ -15,6 +15,7 @@ namespace sctm.discordbot.Commands
         {
             _config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile("appsettings.global.json", optional: true, reloadOnChange: true)
                 .AddJsonFile("appsettings.development.json", optional: true, reloadOnChange: true)
                 .Build();
 
