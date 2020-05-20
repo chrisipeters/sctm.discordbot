@@ -113,10 +113,10 @@ namespace sctm.discordbot
                             {
                                 Action = _logAction,
                                 Level = Microsoft.Extensions.Logging.LogLevel.Information,
-                                Message = $"Processing image as {_uploadResult.type.ToString()}"
+                                Message = $"Processing image as {_uploadResult.Type.ToString()}"
                             });
 
-                            switch (_uploadResult.type)
+                            switch (_uploadResult.Type)
                             {
                                 case connectors.azureComputerVision.models.ScreenShotTypes.Unknown:
                                     break;
@@ -125,22 +125,18 @@ namespace sctm.discordbot
                                 case connectors.azureComputerVision.models.ScreenShotTypes.TradeConsole_SELL:
                                     break;
                                 case connectors.azureComputerVision.models.ScreenShotTypes.TradeConsole_BUYConfirm:
-                                    var _dataTradeBuyConfirm = (connectors.azureComputerVision.models.Terminals.Trade.Confirm)_uploadResult.result;
-                                    await e.Message.RespondAsync(embed: Embeds.TradeBUYConfirm(_dataTradeBuyConfirm, e, item, _botAvatar));
+                                    await e.Message.RespondAsync(embed: Embeds.TradeBUYConfirm(_uploadResult.Results.TradeConfirm, e, item, _botAvatar));
                                     break;
                                 case connectors.azureComputerVision.models.ScreenShotTypes.TradeConsole_SELLConfirm:
-                                    var _dataTradeSellConfirm = (connectors.azureComputerVision.models.Terminals.Trade.Confirm)_uploadResult.result;
-                                    await e.Message.RespondAsync(embed: Embeds.TradeSELLConfirm(_dataTradeSellConfirm, e, item, _botAvatar));
+                                    await e.Message.RespondAsync(embed: Embeds.TradeSELLConfirm(_uploadResult.Results.TradeConfirm, e, item, _botAvatar));
                                     break;
                                 case connectors.azureComputerVision.models.ScreenShotTypes.FleetManager:
                                     break;
                                 case connectors.azureComputerVision.models.ScreenShotTypes.RefineryTerminal_SELL:
-                                    var _dataRefinerySell = (connectors.azureComputerVision.models.Terminals.Refinery.Sell)_uploadResult.result;
-                                    await e.Message.RespondAsync(embed: Embeds.RefinerySellEmbed(_dataRefinerySell, e, item, _botAvatar));
+                                    await e.Message.RespondAsync(embed: Embeds.RefinerySellEmbed(_uploadResult.Results.RefinerySell, e, item, _botAvatar));
                                     break;
                                 case connectors.azureComputerVision.models.ScreenShotTypes.RefineryTerminal_SELLConfirm:
-                                    var _dataRefineryConfirm = (connectors.azureComputerVision.models.Terminals.Refinery.Confirm)_uploadResult.result;
-                                    await e.Message.RespondAsync(embed: Embeds.RefinerySellConfirm(_dataRefineryConfirm, e, item, _botAvatar));
+                                    await e.Message.RespondAsync(embed: Embeds.RefinerySellConfirm(_uploadResult.Results.RefineryConfirm, e, item, _botAvatar));
                                     break;
                                 default:
                                     break;
