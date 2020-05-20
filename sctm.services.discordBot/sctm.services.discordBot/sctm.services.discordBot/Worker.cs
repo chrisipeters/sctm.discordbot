@@ -33,7 +33,7 @@ namespace sctm.services.discordBot
 
             _logger.LogInformation("Configuring Discord client");
             var _dService = new Services(_config, _logger);
-            (_discord, _commands) = _dService.GetClient();
+            (_discord, _commands) = _dService.CreateDiscordClient();
 
             _commands.RegisterCommands<MessageCommands>();
 
