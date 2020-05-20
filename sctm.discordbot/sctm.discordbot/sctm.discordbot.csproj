@@ -16,7 +16,7 @@
 
     <PackageReference Include="sctm.connectors.azureComputerVision" Version="0.0.93" />
     <PackageReference Include="sctm.connectors.azureComputerVision.models" Version="0.0.18" />
-    <PackageReference Include="sctm.logging" Version="0.0.*" />
+    <PackageReference Include="sctm.logging" Version="0.0.2" />
   </ItemGroup>
 
   <ItemGroup>
