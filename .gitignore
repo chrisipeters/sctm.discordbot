@@ -9,3 +9,7 @@
 /sctm.discordbot/sctm.discordbot/bin/Release/netcoreapp3.1
 /sctm.discordbot/sctm.discordbot/Properties/PublishProfiles
 /sctm.discordbot/sctm.discordbot/appsettings.global.json
+/sctm.services.discordBot/sctm.services.discordBot/.vs/sctm.services.discordBot/v16
+/sctm.services.discordBot/sctm.services.discordBot/sctm.services.discordBot/bin/Debug/netcoreapp3.1
+/sctm.services.discordBot/sctm.services.discordBot/sctm.services.discordBot/obj
+/sctm.services.discordBot/sctm.services.discordBot/sctm.services.discordBot/appsettings.Development.json

@@ -3,7 +3,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using System.Threading.Tasks;
 
-namespace sctm.discordbot.Commands
+namespace sctm.services.discordBot.Commands.Messages
 {
     public partial class MessageCommands
     {
@@ -15,13 +15,6 @@ namespace sctm.discordbot.Commands
             var _logAction = "AddCommands_Ping";
 
             await ctx.TriggerTypingAsync();
-
-            _logger.WriteEntry(new logging.Models.LogEntry
-            {
-                Action = _logAction,
-                Level = Microsoft.Extensions.Logging.LogLevel.Information,
-                Message = $"Adding Command: {_logAction}"
-            });
 
             // let's make the message a bit more colourful
             var emoji = DiscordEmoji.FromName(ctx.Client, ":ping_pong:");

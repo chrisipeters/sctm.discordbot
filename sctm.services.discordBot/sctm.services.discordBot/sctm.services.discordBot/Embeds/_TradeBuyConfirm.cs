@@ -1,13 +1,11 @@
 ﻿using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
-using System;
-using System.Linq;
 
-namespace sctm.discordbot
+namespace sctm.services.discordBot
 {
     public partial class Embeds
     {
-        public static DiscordEmbed RefinerySellEmbed(connectors.azureComputerVision.models.Terminals.Refinery.Sell data, MessageCreateEventArgs e, DiscordAttachment attachment, string avatarUrl)
+        public static DiscordEmbed TradeBUYConfirm(sctm.connectors.azureComputerVision.models.Terminals.Trade.Confirm data, MessageCreateEventArgs e, DiscordAttachment attachment, string avatarUrl)
         {
             var _userName = e.Author.Username;
             var _userDiscriminator = e.Author.Discriminator;
@@ -20,25 +18,19 @@ namespace sctm.discordbot
 
             var _ret = new DiscordEmbedBuilder
             {
-                Title = $"New Refinery Sale Option by {_userName}",
-                Description = $"**{_userName}** is showing an option to sell **{data.UnrefinedCargo}**scu of mined materials to the refinery for a gross profit of **{data.TotalValue}**aUEC.\nUpon completing this sale **{data.TotalValue}**xp will be awarded to the player, team, and org.",
+                Title = $"New Trade Console BUY Completed by {_userName}",
+                Description = $"**{_userName}** has purchased {data.Item.Quantity} units of {data.Item.Name} for a total transaction cost of {data.Item.TransactionCost}.",
                 ThumbnailUrl = _userAvatarUrl,
                 ImageUrl = attachment.Url,
-                Color = DiscordColor.Yellow,
+                Color = DiscordColor.Blue,
                 Footer = new DiscordEmbedBuilder.EmbedFooter { Text = "Star Citizen Tools by SC TradeMasters | Season 1 will end 1 June, 2020", IconUrl = avatarUrl }
             }
             .AddField($"**{_guildName}**", ":first_place:**Rank 3** [**1.2B**xp]")
             .AddField($"**{_channelName}**", ":second_place:**Rank 27** [**1M**xp]")
             .AddField($"**{_userName}#{_userDiscriminator}**", ":trophy:**Rank 1** [**27,324**xp]")
             .AddField($"Ship", data.ShipIdentifier)
-            .AddField($"Total Value *({data.Items.Count} item types)*", $"**{data.TotalValue}** aUEC")
+            .AddField($"Purchased {data.Item.Name}", $"{data.Item.Quantity} @ {data.Item.PricePerUnit} = {data.Item.TransactionCost}")
             ;
-
-            foreach (var item in data.Items)
-            {
-                _ret.AddField($"**{item.Name}**", $"**{item.Value}** aUEC\n*({item.Amount} %)*", true);
-            }
-
 
             return _ret;
         }
