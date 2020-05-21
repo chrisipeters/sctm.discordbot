@@ -27,6 +27,7 @@ namespace sctm.services.discordBot
                     services.AddHostedService<Worker>()
                       .Configure<EventLogSettings>(config =>
                       {
+                          config.SourceName = "ChrispyKoala";
                           config.LogName = "Discord - ChrispyKoala";
                       });
                 }).UseWindowsService();
