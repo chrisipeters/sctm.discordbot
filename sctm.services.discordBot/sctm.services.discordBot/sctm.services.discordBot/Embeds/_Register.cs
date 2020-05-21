@@ -13,12 +13,15 @@ namespace sctm.services.discordBot
             var _userId = e.Author.Id;
             var _channelName = e.Channel.Name;
             var _channelId = e.Channel.Id;
+            var _serverName = e.Channel.Guild.Name;
+            var _serverAvatarUrl = e.Channel.Guild.IconUrl;
+            var _serverId = e.Channel.Guild.Id;
 
             var _ret = new DiscordEmbedBuilder
             {
-                Title = $"Join our community of competitive Star Citizen players",
-                Description = $"SCTradeMasters is a community of competitive Star Citizen players. Registration is free and allows you to compete for yourself, your team, and your organization in our leaderboards. [Click here](https://sctrademasters.com/register) to access the register page.\n\n We're still in heavy development, but here's what's coming:",
-                ThumbnailUrl = _userAvatarUrl,
+                Title = $"{_serverName} Tools and Leaderboards",
+                Description = $"As part of {_serverName}, we're excited to invite you to access the SCTradeMasters leaderboards and Star Citizen tools. [Click here](https://sctrademasters.com/register?ref=discord&server={_serverName}) to access the register page.\n\n We're still in heavy development, but here's what's coming:",
+                ThumbnailUrl = _serverAvatarUrl,
                 Color = DiscordColor.Red,
                 Footer = new DiscordEmbedBuilder.EmbedFooter { Text = "Star Citizen Tools by SC TradeMasters | Season 1 will end 1 June, 2020", IconUrl = botAvatarUrl }
             }
