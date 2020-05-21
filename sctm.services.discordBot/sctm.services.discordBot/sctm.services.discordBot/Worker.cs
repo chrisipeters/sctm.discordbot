@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -19,7 +22,7 @@ namespace sctm.services.discordBot
         private HttpClient _httpClient;
         private DiscordClient _discord;
         private CommandsNextModule _commands;
-
+        private List<DiscordDmChannel> _supportChannels;
 
         public Worker(ILogger<Worker> logger, IConfiguration config)
         {
@@ -40,10 +43,30 @@ namespace sctm.services.discordBot
 
             _discord.ConnectAsync();
 
-            /*
-            DiscordUser _user = _discord.GetUserAsync();
-            _discord.CreateDmAsync
-            */
+            var _assemblyVersion = typeof(Worker).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
+
+            // setup support channels
+            try
+            {
+                var _supportUserIds = _config.GetValue<List<ulong>>("Discord:SupportUsers");
+                if (_supportUserIds != null && _supportUserIds.Any())
+                {
+                    _supportChannels = new List<DiscordDmChannel>();
+                    foreach (var item in _supportUserIds)
+                    {
+                        DiscordUser _user = _discord.GetUserAsync(item).Result;
+                        var _curChannel = _discord.CreateDmAsync(_user).Result;
+                        _curChannel.SendMessageAsync($"I'm awake! Now running version {_assemblyVersion}");
+
+                        _supportChannels.Add(_curChannel);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error setting up support channels");
+            }
+            
             return base.StartAsync(cancellationToken);
         }
 
