@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -39,6 +40,10 @@ namespace sctm.services.discordBot
 
             _discord.ConnectAsync();
 
+            /*
+            DiscordUser _user = _discord.GetUserAsync();
+            _discord.CreateDmAsync
+            */
             return base.StartAsync(cancellationToken);
         }
 

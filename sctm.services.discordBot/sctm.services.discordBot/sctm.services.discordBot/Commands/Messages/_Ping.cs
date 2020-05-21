@@ -20,7 +20,7 @@ namespace sctm.services.discordBot.Commands.Messages
             var emoji = DiscordEmoji.FromName(ctx.Client, ":ping_pong:");
 
             // respond with ping
-            await ctx.RespondAsync($"{emoji} Pong! Ping: {ctx.Client.Ping}ms");
+            await ctx.RespondAsync($"{emoji} Pong! Ping: {ctx.Client.Ping}ms {ctx.Message.Author.Id}");
         }
     }
 }
