@@ -41,7 +41,7 @@ namespace sctm.services.discordBot
             (_discord, _commands) = _dService.CreateDiscordClient();
 
             _commands.RegisterCommands<MessageCommands>();
-            _commands.RegisterCommands<InteractiveCommands>();
+            //_commands.RegisterCommands<InteractiveCommands>();
 
             _discord.ConnectAsync();
 
