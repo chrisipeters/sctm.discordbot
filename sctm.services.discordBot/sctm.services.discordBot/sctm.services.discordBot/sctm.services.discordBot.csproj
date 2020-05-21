@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <OutputType>Exe</OutputType>
-    <AssemblyVersion>0.0.2</AssemblyVersion>
+    <AssemblyVersion>0.0.3</AssemblyVersion>
     <UserSecretsId>dotnet-sctm.services.discordBot-13C81400-6717-4619-BE3C-0BBC8C54DF43</UserSecretsId>
     
   </PropertyGroup>
@@ -17,6 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DSharpPlus.Interactivity" Version="3.2.3" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.4" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="3.1.4" />
     <PackageReference Include="DSharpPlus" Version="3.2.3" />

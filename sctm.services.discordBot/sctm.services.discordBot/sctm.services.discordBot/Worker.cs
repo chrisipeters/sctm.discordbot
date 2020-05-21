@@ -11,6 +11,7 @@ using DSharpPlus.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using sctm.services.discordBot.Commands.Interactive;
 using sctm.services.discordBot.Commands.Messages;
 
 namespace sctm.services.discordBot
@@ -40,6 +41,7 @@ namespace sctm.services.discordBot
             (_discord, _commands) = _dService.CreateDiscordClient();
 
             _commands.RegisterCommands<MessageCommands>();
+            _commands.RegisterCommands<InteractiveCommands>();
 
             _discord.ConnectAsync();
 
