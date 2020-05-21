@@ -22,7 +22,7 @@ namespace sctm.services.discordBot
         private HttpClient _httpClient;
         private DiscordClient _discord;
         private CommandsNextModule _commands;
-        private List<DiscordDmChannel> _supportChannels;
+        private DiscordDmChannel _supportChannel;
 
         public Worker(ILogger<Worker> logger, IConfiguration config)
         {
@@ -48,19 +48,12 @@ namespace sctm.services.discordBot
             // setup support channels
             try
             {
-                var _supportUserIds = _config.GetValue<List<ulong>>("Discord:SupportUsers");
-                if (_supportUserIds != null && _supportUserIds.Any())
-                {
-                    _supportChannels = new List<DiscordDmChannel>();
-                    foreach (var item in _supportUserIds)
-                    {
-                        DiscordUser _user = _discord.GetUserAsync(item).Result;
-                        var _curChannel = _discord.CreateDmAsync(_user).Result;
-                        _curChannel.SendMessageAsync($"I'm awake! Now running version {_assemblyVersion}");
+                var _supportUserId = _config["Discord:SupportUser"];
+                var _supportUser = _discord.GetUserAsync(ulong.Parse(_supportUserId)).Result;
 
-                        _supportChannels.Add(_curChannel);
-                    }
-                }
+                _supportChannel = _discord.CreateDmAsync(_supportUser).Result;
+                _supportChannel.SendMessageAsync($"I'm alive! Now running version {_assemblyVersion}");
+
             }
             catch (Exception ex)
             {
@@ -81,6 +74,7 @@ namespace sctm.services.discordBot
 
         public override Task StopAsync(CancellationToken cancellationToken)
         {
+            _supportChannel.SendMessageAsync($"I'm shutting down!");
             _logger.LogInformation("disconnecting from Discord");
             _discord.DisconnectAsync();
             Task.Delay(1000);

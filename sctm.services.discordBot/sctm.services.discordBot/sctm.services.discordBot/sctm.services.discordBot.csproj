@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <OutputType>Exe</OutputType>
+    <AssemblyVersion>0.0.1</AssemblyVersion>
     <UserSecretsId>dotnet-sctm.services.discordBot-13C81400-6717-4619-BE3C-0BBC8C54DF43</UserSecretsId>
     
   </PropertyGroup>
