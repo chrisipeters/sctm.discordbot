@@ -20,7 +20,7 @@ namespace sctm.services.discordBot
             var _serverAvatarUrl = e.Channel.Guild.IconUrl;
             var _serverId = e.Channel.Guild.Id;
 
-            var _registerUrl = $"https://sctrademasters.com/register?ref=discord&server={_serverName}";
+            var _registerUrl = $"https://sctrademasters.com/register?ref=discord&server={_serverId}";
 
             var _ret = new DiscordEmbedBuilder
             {
