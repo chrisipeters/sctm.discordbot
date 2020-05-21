@@ -12,7 +12,7 @@ namespace sctm.services.discordBot.Commands.Interactive
     public partial class InteractiveCommands
     {
         [Command("poll"), Description("Run a poll with reactions.")]
-        public async Task Poll(CommandContext ctx, [Description("How long should the poll last.")] TimeSpan duration, [Description("What options should people have.")] params DiscordEmoji[] options)
+        public async Task Poll(CommandContext ctx,[Description("Poll Text")] string pollText, [Description("How long should the poll last.")] TimeSpan duration, [Description("What options should people have.")] params DiscordEmoji[] options)
         {
             // first retrieve the interactivity module from the client
             var interactivity = ctx.Client.GetInteractivityModule();
@@ -21,8 +21,8 @@ namespace sctm.services.discordBot.Commands.Interactive
             // then let's present the poll
             var embed = new DiscordEmbedBuilder
             {
-                Title = "Poll time!",
-                Description = string.Join(" ", poll_options)
+                Title = $"Poll time!",
+                Description = pollText + "\n" + string.Join(" ", poll_options)
             };
             var msg = await ctx.RespondAsync(embed: embed);
 
