@@ -11,7 +11,7 @@ namespace sctm.services.discordBot
 {
     public partial class Services
     {
-        public (DiscordClient client, CommandsNextModule cNext) CreateDiscordClient()
+        public (DiscordClient client, CommandsNextModule cNext) CreateDiscordClient(DependencyCollection dependencies)
         {
             _discord = new DiscordClient(_cfg);
 
@@ -26,7 +26,8 @@ namespace sctm.services.discordBot
                 EnableDms = true,
 
                 // enable mentioning the bot as a command prefix
-                EnableMentionPrefix = true
+                EnableMentionPrefix = true,
+                Dependencies = dependencies
             };
 
             _commands = _discord.UseCommandsNext(_ccfg);
