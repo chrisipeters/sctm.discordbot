@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Net.Http;
@@ -14,6 +16,7 @@ namespace sctm.services.discordBot.Commands.Attachments
         private HttpClient _openClient;
         private string _token;
         private DateTime _tokenDate;
+        private CommandContext _ctx;
 
         public AttachmentCommands(IConfiguration config, ILogger<Worker> logger, Services services)
         {

@@ -5,7 +5,7 @@ namespace sctm.services.discordBot
 {
     public partial class Embeds
     {
-        public static DiscordEmbed TradeSELLConfirm(sctm.connectors.azureComputerVision.models.Terminals.Trade.Confirm data, MessageCreateEventArgs e, DiscordAttachment attachment, string avatarUrl, string recordId)
+        public static DiscordEmbed TradeSELLConfirm(sctm.connectors.azureComputerVision.models.Terminals.Trade.Confirm data, MessageCreateEventArgs e, DiscordAttachment attachment, string recordId)
         {
             var _userName = e.Author.Username;
             var _userDiscriminator = e.Author.Discriminator;
@@ -23,7 +23,7 @@ namespace sctm.services.discordBot
                 ThumbnailUrl = _userAvatarUrl,
                 ImageUrl = attachment.Url,
                 Color = DiscordColor.Blue,
-                Footer = new DiscordEmbedBuilder.EmbedFooter { Text = $"Star Citizen Tools by SC TradeMasters >> Terminals_TradeSellConfirm:{recordId}", IconUrl = avatarUrl }
+                Footer = new DiscordEmbedBuilder.EmbedFooter { Text = $"Star Citizen Tools by SC TradeMasters >> Terminals_TradeSellConfirm:{recordId}", IconUrl = e.Client.CurrentUser.AvatarUrl }
             }
             .AddField($"**{_guildName}**", ":first_place:**Rank 3** [**1.2B**xp]")
             .AddField($"**{_channelName}**", ":second_place:**Rank 27** [**1M**xp]")

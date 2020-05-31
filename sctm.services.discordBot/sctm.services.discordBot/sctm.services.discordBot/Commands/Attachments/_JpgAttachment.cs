@@ -1,9 +1,12 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
+using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
+using sctm.connectors.azureComputerVision.models.Terminals.Refinery;
 using sctm.services.discordBot.Models;
 using System;
 using System.Globalization;
@@ -73,6 +76,7 @@ namespace sctm.services.discordBot.Commands.Attachments
 
 
                 string _stringResult = null;
+                string _stringError = null;
                 var response = await _sctmClient.PostAsync(_url, form);
                 if (response.IsSuccessStatusCode)
                 {
@@ -97,7 +101,7 @@ namespace sctm.services.discordBot.Commands.Attachments
                         else
                         {
                             // give up
-                            _stringResult = await response.Content.ReadAsStringAsync();
+                            _stringError = await response.Content.ReadAsStringAsync();
                             var f = "";
                         }
                     }
@@ -113,15 +117,13 @@ namespace sctm.services.discordBot.Commands.Attachments
                     var f = "";
                 }
 
-                if (_stringResult == null)
-                {
-                    // no data - bail
-                    var f = "";
+                if(_stringError != null){
+                    await e.Channel.SendMessageAsync(_stringError);
                 }
                 else
                 {
-                    var _parsedResult = JsonConvert.DeserializeObject<ProcessScreenshotResult>(_stringResult); 
-                    
+                    var _parsedResult = JsonConvert.DeserializeObject<ProcessScreenshotResult>(_stringResult);
+                    await SendSuccess(e.Message.Attachments.Where(i => i.Id == itemId).First(),e,_parsedResult);
                 }
 
 
@@ -130,5 +132,55 @@ namespace sctm.services.discordBot.Commands.Attachments
 
         }
 
+
+        private async Task SendSuccess(DiscordAttachment image, MessageCreateEventArgs e, ProcessScreenshotResult result)
+        {
+            string _json = null;
+            switch (result.UploadResult.Type)
+            {
+                case "Unknown":
+                    await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":question:"));
+                    break;
+                case "TradeConsole_BUY":
+                    await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":arrows_counterclockwise:"));
+                    break;
+                case "TradeConsole_SELL":
+                    await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":arrows_counterclockwise:"));
+                    break;
+                case "TradeConsole_BUYConfirm":
+                    await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":arrows_counterclockwise:"));
+                    break;
+                case "TradeConsole_SELLConfirm":
+                    await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":arrows_counterclockwise:"));
+                    break;
+                case "FleetManager":
+                    await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":arrows_counterclockwise:"));
+                    break;
+                case "RefineryTerminal_SELL":
+                    _json = result.UploadResult.Results.ToString().Replace("{{", "{").Replace("}}", "}");
+                    Sell _RefineryTerminal_SELL = JsonConvert.DeserializeObject<Sell>(_json);
+
+                    var _embed_rts = Embeds.RefinerySellEmbed(_RefineryTerminal_SELL, e, image, result.RecordId);
+                    await e.Channel.SendMessageAsync(null, false, _embed_rts);
+                    await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":pick:"));
+                    break;
+                case "RefineryTerminal_SELLConfirm":
+                    _json = result.UploadResult.Results.ToString().Replace("{{", "{").Replace("}}", "}");
+                    Confirm _RefineryTerminal_SELLConfirm = JsonConvert.DeserializeObject<Confirm>(_json);
+
+                    var _embed_rtsc = Embeds.RefineryConfirm(_RefineryTerminal_SELLConfirm, e, image, result.RecordId);
+                    await e.Channel.SendMessageAsync(null, false, _embed_rtsc);
+                    await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":pick:"));
+                    break;
+                default:
+                    await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":question:"));
+                    break;
+            }
+        }
+
+        private async Task SendFail(MessageCreateEventArgs e, ProcessScreenshotResult result)
+        {
+
+        }
     }
 }
