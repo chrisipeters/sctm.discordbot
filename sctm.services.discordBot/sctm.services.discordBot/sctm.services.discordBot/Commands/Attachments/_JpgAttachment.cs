@@ -1,5 +1,6 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
@@ -40,7 +41,7 @@ namespace sctm.services.discordBot.Commands.Attachments
                     return;
                 }
 
-                var _imageReq = await _sctmClient.GetAsync(_imageUrl);
+                var _imageReq = await _openClient.GetAsync(_imageUrl);
                 var _stream = await _imageReq.Content.ReadAsStreamAsync();
 
                 //create new MemoryStream object
@@ -58,29 +59,76 @@ namespace sctm.services.discordBot.Commands.Attachments
 
                 var _url = _config["SCTMUrls:ProcessLeaderboardImage"] + e.Author.Id;
 
-                using (var content = new MultipartFormDataContent("Upload----" + DateTime.Now.ToString(CultureInfo.InvariantCulture)))
+                var form = new MultipartFormDataContent();
+                var content = new StreamContent(memStream);
+                form.Add(content, "file");
+                content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
                 {
-                    var _parseResult = await _sctmClient.PostAsync(_url, content);
-                    if (!_parseResult.IsSuccessStatusCode)
+                    Name = "file",
+                    FileName = e.Message.Attachments.Where(i => i.Id == itemId).Select(i => i.FileName).FirstOrDefault()
+                };
+                content.Headers.Remove("Content-Type");
+                content.Headers.Add("Content-Type", "image/jpg");
+                form.Add(content);
+
+
+                string _stringResult = null;
+                var response = await _sctmClient.PostAsync(_url, form);
+                if (response.IsSuccessStatusCode)
+                {
+                    _stringResult = await response.Content.ReadAsStringAsync();
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    // 401 
+                    // Authorization header has been set, but the server reports that it is missing.
+                    // It was probably stripped out due to a redirect.
+
+                    var finalRequestUri = response.RequestMessage.RequestUri; // contains the final location after following the redirect.
+
+                    if (finalRequestUri != new Uri(_url)) // detect that a redirect actually did occur.
                     {
-                        var _errorContent = await _parseResult.Content.ReadAsStringAsync();
-                        ApiError _errorResponse = null; try { _errorResponse = JsonConvert.DeserializeObject<ApiError>(_errorContent); }
-                        catch (Exception ex)
+                        // If this is public facing, add tests here to determine if Url should be trusted
+                        response = await _sctmClient.PostAsync(finalRequestUri, form);
+                        if (response.IsSuccessStatusCode)
                         {
-                            var _m = ex.Message;
+                            _stringResult = await response.Content.ReadAsStringAsync();
                         }
-                        var f = "";
-                    }
-                    else
-                    {
-                        var _successContent = await _parseResult.Content.ReadAsStringAsync();
-                        var f = "";
+                        else
+                        {
+                            // give up
+                            _stringResult = await response.Content.ReadAsStringAsync();
+                            var f = "";
+                        }
                     }
                 }
+                else
+                {
+                    var _errorContent = await response.Content.ReadAsStringAsync();
+                    ApiError _errorResponse = null; try { _errorResponse = JsonConvert.DeserializeObject<ApiError>(_errorContent); }
+                    catch (Exception ex)
+                    {
+                        var _m = ex.Message;
+                    }
+                    var f = "";
+                }
+
+                if (_stringResult == null)
+                {
+                    // no data - bail
+                    var f = "";
+                }
+                else
+                {
+                    var _parsedResult = JsonConvert.DeserializeObject<ProcessScreenshotResult>(_stringResult); 
+                    
+                }
+
 
             }
 
 
         }
+
     }
 }

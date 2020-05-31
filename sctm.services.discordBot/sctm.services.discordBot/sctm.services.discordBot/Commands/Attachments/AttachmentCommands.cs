@@ -11,7 +11,7 @@ namespace sctm.services.discordBot.Commands.Attachments
         private ILogger<Worker> _logger;
         private Services _services;
         private HttpClient _sctmClient;
-
+        private HttpClient _openClient;
         private string _token;
         private DateTime _tokenDate;
 
@@ -21,6 +21,7 @@ namespace sctm.services.discordBot.Commands.Attachments
             _logger = logger;
             _services = services;
             _sctmClient = new HttpClient();
+            _openClient = new HttpClient();
 
             _tokenDate = DateTime.MinValue;
         }
