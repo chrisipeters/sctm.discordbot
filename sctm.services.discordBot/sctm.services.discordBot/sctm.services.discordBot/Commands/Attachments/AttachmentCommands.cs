@@ -1,14 +1,28 @@
-﻿using System.Net.Http;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Net.Http;
 
 namespace sctm.services.discordBot.Commands.Attachments
 {
-    class AttachmentCommands
+    public partial class AttachmentCommands
     {
-        private HttpClient _httpClient;
+        private IConfiguration _config;
+        private ILogger<Worker> _logger;
+        private Services _services;
+        private HttpClient _sctmClient;
 
-        public AttachmentCommands(HttpClient httpClient)
+        private string _token;
+        private DateTime _tokenDate;
+
+        public AttachmentCommands(IConfiguration config, ILogger<Worker> logger, Services services)
         {
-            _httpClient = httpClient;
+            _config = config;
+            _logger = logger;
+            _services = services;
+            _sctmClient = new HttpClient();
+
+            _tokenDate = DateTime.MinValue;
         }
     }
 }

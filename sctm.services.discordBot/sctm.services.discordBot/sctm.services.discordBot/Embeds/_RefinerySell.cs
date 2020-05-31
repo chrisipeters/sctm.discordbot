@@ -5,7 +5,7 @@ namespace sctm.services.discordBot
 {
     public partial class Embeds
     {
-        public static DiscordEmbed RefinerySellEmbed(sctm.connectors.azureComputerVision.models.Terminals.Refinery.Sell data, MessageCreateEventArgs e, DiscordAttachment attachment, string avatarUrl)
+        public static DiscordEmbed RefinerySellEmbed(sctm.connectors.azureComputerVision.models.Terminals.Refinery.Sell data, MessageCreateEventArgs e, DiscordAttachment attachment, string avatarUrl, string recordId)
         {
             var _userName = e.Author.Username;
             var _userDiscriminator = e.Author.Discriminator;
@@ -23,7 +23,7 @@ namespace sctm.services.discordBot
                 ThumbnailUrl = _userAvatarUrl,
                 ImageUrl = attachment.Url,
                 Color = DiscordColor.Yellow,
-                Footer = new DiscordEmbedBuilder.EmbedFooter { Text = "Star Citizen Tools by SC TradeMasters | Season 1 will end 1 June, 2020", IconUrl = avatarUrl }
+                Footer = new DiscordEmbedBuilder.EmbedFooter { Text = $"Star Citizen Tools by SC TradeMasters >> Terminals_RefinerySell:{recordId}", IconUrl = avatarUrl }
             }
             .AddField($"**{_guildName}**", ":first_place:**Rank 3** [**1.2B**xp]")
             .AddField($"**{_channelName}**", ":second_place:**Rank 27** [**1M**xp]")

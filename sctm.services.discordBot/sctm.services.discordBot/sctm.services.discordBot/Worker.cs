@@ -11,6 +11,7 @@ using DSharpPlus.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using sctm.services.discordBot.Commands.Attachments;
 using sctm.services.discordBot.Commands.Interactive;
 using sctm.services.discordBot.Commands.Messages;
 
@@ -50,7 +51,36 @@ namespace sctm.services.discordBot
 
 
             _commands.RegisterCommands<MessageCommands>();
-            //_commands.RegisterCommands<InteractiveCommands>();
+            _commands.RegisterCommands<AttachmentCommands>();
+
+            #region attachments
+
+            var _attachmentWorker = new AttachmentCommands(_config,_logger,_dService);
+
+            _discord.MessageCreated += async e =>
+            {
+                if (e.Message.Attachments != null && e.Message.Attachments.Any())
+                {
+                    foreach (var item in e.Message.Attachments)
+                    {
+                        if (
+                        item.FileName.ToLower().EndsWith(".jpg")
+                        || item.FileName.ToLower().EndsWith(".png")
+                        )
+                            await _attachmentWorker.RunCommand_JpgAttachment(item.Id, e);
+                    }
+                }
+            };
+            #endregion
+
+            #region reactions
+            
+            _discord.MessageReactionAdded += async e =>
+            {
+                await MessageCommands.RunCommand_Reaction(_discord,e, _supportChannel);
+            };
+
+            #endregion
 
             _discord.ConnectAsync();
 
