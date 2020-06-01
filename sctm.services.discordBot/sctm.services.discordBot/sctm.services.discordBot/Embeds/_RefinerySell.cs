@@ -26,9 +26,9 @@ namespace sctm.services.discordBot
                 Color = DiscordColor.Yellow,
                 Footer = new DiscordEmbedBuilder.EmbedFooter { Text = $"Star Citizen Tools by SC TradeMasters >> Terminals_RefinerySell:{recordId}", IconUrl = e.Client.CurrentUser.AvatarUrl }
             }
-            .AddField($"**{_guildName}**", ":first_place:**Rank 3** [**1.2B**xp]")
-            .AddField($"**{_channelName}**", ":second_place:**Rank 27** [**1M**xp]")
-            .AddField($"**{_userName}#{_userDiscriminator}**", ":trophy:**Rank 1** [**27,324**xp]")
+            //.AddField($"**{_guildName}**", ":first_place:**Rank 3** [**1.2B**xp]")
+            //.AddField($"**{_channelName}**", ":second_place:**Rank 27** [**1M**xp]")
+            //.AddField($"**{_userName}#{_userDiscriminator}**", ":trophy:**Rank 1** [**27,324**xp]")
             .AddField($"Ship", data.ShipIdentifier)
             .AddField($"Total Value *({data.Items.Count} item types)*", $"**{data.TotalValue}** aUEC")
             ;
