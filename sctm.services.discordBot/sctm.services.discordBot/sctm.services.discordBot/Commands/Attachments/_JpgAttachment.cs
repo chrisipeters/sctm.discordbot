@@ -27,8 +27,8 @@ namespace sctm.services.discordBot.Commands.Attachments
             var _user = await _services.GetUser(e.Message.Author.Id);
             if (_user == null)
             {
-                var _registerEmbed = Embeds.Register(_ctx);
-                var _dm = await _ctx.Client.CreateDmAsync(e.Author);
+                var _registerEmbed = Embeds.Register(e);
+                var _dm = await discord.CreateDmAsync(e.Author);
                 await _dm.SendMessageAsync(null, false, _registerEmbed);
                 await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":bust_in_silhouette:"));
                 return;
