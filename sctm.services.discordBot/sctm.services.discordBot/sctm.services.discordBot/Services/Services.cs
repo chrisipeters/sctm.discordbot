@@ -25,7 +25,7 @@ namespace sctm.services.discordBot
             _config = config;
             _cfg = new DiscordConfiguration
             {
-                Token = config["Discord:DevToken"],
+                Token = config["Discord:Token"],
                 TokenType = TokenType.Bot,
 
                 AutoReconnect = true,
