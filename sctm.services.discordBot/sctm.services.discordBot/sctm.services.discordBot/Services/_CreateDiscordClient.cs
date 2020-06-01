@@ -30,6 +30,8 @@ namespace sctm.services.discordBot
                 Dependencies = dependencies
             };
 
+            
+
             _commands = _discord.UseCommandsNext(_ccfg);
 
             _commands.CommandExecuted += Commands_CommandExecuted;

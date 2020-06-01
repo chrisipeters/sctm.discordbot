@@ -2,7 +2,6 @@
 using DSharpPlus.CommandsNext;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic;
 using System;
 using System.Net.Http;
 
@@ -13,7 +12,8 @@ namespace sctm.services.discordBot
         private IConfiguration _config;
         private DiscordConfiguration _cfg;
         private ILogger<Worker> _logger;
-        private HttpClient _httpClient;
+        public HttpClient HttpClient;
+        private HttpClient _sctmHttpClient;
         private DiscordClient _discord;
         private CommandsNextConfiguration _ccfg;
         private CommandsNextModule _commands;
@@ -34,7 +34,8 @@ namespace sctm.services.discordBot
             };
 
             _logger = logger;
-            _httpClient = new HttpClient();
+            HttpClient = new HttpClient();
+            _sctmHttpClient = new HttpClient();
         }
     }
 }

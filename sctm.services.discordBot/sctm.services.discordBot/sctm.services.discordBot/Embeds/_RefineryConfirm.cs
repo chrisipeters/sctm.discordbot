@@ -11,10 +11,10 @@ namespace sctm.services.discordBot
             var _userDiscriminator = e.Author.Discriminator;
             var _userAvatarUrl = e.Author.AvatarUrl;
             var _userId = e.Author.Id;
-            var _channelName = e.Channel.Name;
+            var _channelName = (e.Channel?.Name != null && e.Channel?.Name.Trim().Length > 0) ? e.Channel?.Name : "Direct User";
             var _channelId = e.Channel.Id;
-            var _guildName = e.Guild.Name;
-            var _guildId = e.Guild.Id;
+            var _guildName = (e.Guild?.Name != null) ? e.Guild.Name : "Direct User";
+            //var _guildId = e.Guild.Id;
 
             var _ret = new DiscordEmbedBuilder
             {
@@ -25,9 +25,9 @@ namespace sctm.services.discordBot
                 Color = DiscordColor.Yellow,
                 Footer = new DiscordEmbedBuilder.EmbedFooter { Text = $"Star Citizen Tools by SC TradeMasters >> Terminals_RefinerySellConfirm:{recordId}", IconUrl = e.Client.CurrentUser.AvatarUrl }
             }
-            .AddField($"**{_guildName}**", ":first_place:**Rank 3** [**1.2B**xp]")
-            .AddField($"**{_channelName}**", ":second_place:**Rank 27** [**1M**xp]")
-            .AddField($"**{_userName}#{_userDiscriminator}**", ":trophy:**Rank 1** [**27,324**xp]")
+            //.AddField($"**{_guildName}**", ":first_place:**Rank 3** [**1.2B**xp]")
+            //.AddField($"**{_channelName}**", ":second_place:**Rank 27** [**1M**xp]")
+            //.AddField($"**{_userName}#{_userDiscriminator}**", ":trophy:**Rank 1** [**27,324**xp]")
             .AddField($"Ship", data.ShipIdentifier, true)
             .AddField($"Total Value", $"**{data.TotalTransactionCost}** aUEC", true)
             ;

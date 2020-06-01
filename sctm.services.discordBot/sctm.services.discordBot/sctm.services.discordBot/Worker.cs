@@ -11,6 +11,7 @@ using DSharpPlus.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.EventLog;
 using sctm.services.discordBot.Commands.Attachments;
 using sctm.services.discordBot.Commands.Interactive;
 using sctm.services.discordBot.Commands.Messages;
@@ -19,43 +20,51 @@ namespace sctm.services.discordBot
 {
     public class Worker : BackgroundService
     {
-        private readonly ILogger<Worker> _logger;
         private readonly IConfiguration _config;
         private HttpClient _httpClient;
         private DiscordClient _discord;
         private CommandsNextModule _commands;
         private DiscordDmChannel _supportChannel;
+        private ILogger<Worker> _logger;
 
         public Worker(ILogger<Worker> logger, IConfiguration config)
         {
-            _logger = logger;
             _config = config;
         }
 
         public override Task StartAsync(CancellationToken cancellationToken)
         {
+            ILoggerFactory loggerFactory = new LoggerFactory(new[]
+            {
+                new EventLogLoggerProvider(new EventLogSettings{
+                LogName = "ChrispyKoala-DiscordBot",
+                SourceName = "Service"
+                })
+            });
+
+            _logger = loggerFactory.CreateLogger<Worker>();
+
             _logger.LogInformation("Provisioning Services");
             _httpClient = new HttpClient();
 
             _logger.LogInformation("Configuring Discord client");
             var _dService = new Services(_config, _logger);
-            
+
 
             var _dBuilder = new DependencyCollectionBuilder();
 
             _dBuilder.AddInstance<Services>(_dService);
             _dBuilder.AddInstance<ILogger<Worker>>(_logger);
             _dBuilder.AddInstance<IConfiguration>(_config);
-
+            
             (_discord, _commands) = _dService.CreateDiscordClient(_dBuilder.Build());
-
-
+            
             _commands.RegisterCommands<MessageCommands>();
             _commands.RegisterCommands<AttachmentCommands>();
 
             #region attachments
 
-            var _attachmentWorker = new AttachmentCommands(_config,_logger,_dService);
+            var _attachmentWorker = new AttachmentCommands(_config, _logger, _dService);
 
             _discord.MessageCreated += async e =>
             {
@@ -67,17 +76,17 @@ namespace sctm.services.discordBot
                         item.FileName.ToLower().EndsWith(".jpg")
                         || item.FileName.ToLower().EndsWith(".png")
                         )
-                            await _attachmentWorker.RunCommand_JpgAttachment(item.Id, e);
+                            await _attachmentWorker.RunCommand_JpgAttachment(_discord, item.Id, e);
                     }
                 }
             };
             #endregion
 
             #region reactions
-            
+
             _discord.MessageReactionAdded += async e =>
             {
-                await MessageCommands.RunCommand_Reaction(_discord,e, _supportChannel);
+                await MessageCommands.RunCommand_Reaction(_discord, e, _supportChannel);
             };
 
             #endregion
@@ -100,7 +109,7 @@ namespace sctm.services.discordBot
             {
                 _logger.LogError(ex, "Error setting up support channels");
             }
-            
+
             return base.StartAsync(cancellationToken);
         }
 
