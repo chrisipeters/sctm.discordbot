@@ -106,11 +106,13 @@ namespace sctm.services.discordBot
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            /*
             while (!stoppingToken.IsCancellationRequested)
             {
                 _logger.LogInformation("ChrispyKoala running at: {time}", DateTimeOffset.Now);
                 await Task.Delay(30000, stoppingToken);
             }
+            */
         }
 
         public override Task StopAsync(CancellationToken cancellationToken)
