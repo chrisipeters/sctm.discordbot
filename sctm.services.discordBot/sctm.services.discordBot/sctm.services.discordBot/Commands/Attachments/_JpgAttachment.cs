@@ -107,7 +107,7 @@ namespace sctm.services.discordBot.Commands.Attachments
             String _resultString = null;
             #region Make call
 
-            var _url = _config["SCTMUrls:ProcessLeaderboardImage"] + e.Author.Id;
+            var _url = _config["SCTM:Urls:ProcessLeaderboardImage"] + e.Author.Id;
 
             var response = await MakeCall(await _services.GetSCTMClient(), _url, form);
             if (!response.IsSuccessStatusCode)

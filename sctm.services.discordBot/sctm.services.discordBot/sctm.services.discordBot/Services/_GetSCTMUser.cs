@@ -22,7 +22,7 @@ namespace sctm.services.discordBot
             {
                 _sctmHttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
 
-                var _url = _config["SCTMUrls:GetMember"].TrimEnd('/') + "/" + discordId;
+                var _url = _config["SCTM:Urls:GetMember"].TrimEnd('/') + "/" + discordId;
 
                 var _result = await _sctmHttpClient.GetAsync(_url);
                 if (!_result.IsSuccessStatusCode) return null;

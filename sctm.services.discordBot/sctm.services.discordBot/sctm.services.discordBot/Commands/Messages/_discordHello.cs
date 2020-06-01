@@ -20,6 +20,16 @@ namespace sctm.services.discordBot.Commands.Messages
         [Aliases("link")] // alternative names for the command
         public async Task AddCommands_Hello(CommandContext ctx, [Description("hello email and code")]params string[] args)
         {
+            #region Get client
+
+            if (_services.GetSCTMClient() == null)
+            {
+                _logger.LogError("Unable to get SCTM Client");
+                await ctx.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)ctx.Client, ":cry:"));
+            }
+
+            #endregion
+
             await ctx.TriggerTypingAsync();
 
             var _values = ctx.Message.Content;
@@ -34,37 +44,27 @@ namespace sctm.services.discordBot.Commands.Messages
 
             #endregion
 
-            if (_token == null || _tokenDate < DateTime.Now.AddMinutes(-15))
+            var _req = new DiscordHelloRequest_POST
             {
-                _token = await _services._GetSCTMToken();
-                if (_token != null) _tokenDate = DateTime.Now;
+                Code = args[1],
+                Email = args[0],
+                DiscordName = ctx.Message.Author.Username,
+                DiscordDiscriminator = ctx.Message.Author.Discriminator,
+                DiscordId = ctx.Message.Author.Id
+            };
+
+            StringContent _content = new StringContent(JsonConvert.SerializeObject(_req), Encoding.UTF8, "application/json");
+
+
+            var _url = _config["SCTM:Urls:DiscordHello"];
+            var _result = await (await _services.GetSCTMClient()).PostAsync(_url, _content);
+            if (_result.IsSuccessStatusCode)
+            {
+                await ctx.RespondAsync("Done. You're all set!");
             }
-
-            if (_token != null && _tokenDate > DateTime.Now.AddMinutes(-15))
+            else
             {
-                (await _services.GetSCTMClient()).DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
-                var _req = new DiscordHelloRequest_POST
-                {
-                    Code = args[1],
-                    Email = args[0],
-                    DiscordName = ctx.Message.Author.Username,
-                    DiscordDiscriminator = ctx.Message.Author.Discriminator,
-                    DiscordId = ctx.Message.Author.Id
-                };
-
-                StringContent _content = new StringContent(JsonConvert.SerializeObject(_req), Encoding.UTF8, "application/json");
-
-
-                var _url = _config["SCTM:Urls:DiscordHello"];
-                var _result = await (await _services.GetSCTMClient()).PostAsync(_url, _content);
-                if (_result.IsSuccessStatusCode)
-                {
-                    await ctx.RespondAsync("Done. You're all set!");
-                } else
-                {
-                    await ctx.RespondAsync("Sorry, something just went wrong: " + (await _result.Content.ReadAsStringAsync()));
-                }
-
+                await ctx.RespondAsync("Sorry, something just went wrong: " + (await _result.Content.ReadAsStringAsync()));
             }
         }
     }
