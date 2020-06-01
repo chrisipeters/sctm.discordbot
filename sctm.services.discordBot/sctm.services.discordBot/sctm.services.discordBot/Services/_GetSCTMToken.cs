@@ -17,8 +17,9 @@ namespace sctm.services.discordBot
 
             _logger.LogInformation($"Getting JWT Token from: {_loginUrl}");
 
-            if (_token == null || _tokenDate < (DateTime.Now.AddMinutes(-15)))
+            if(_token == null)
             {
+                // no token
                 var _loginModel = new SCTMLoginModel
                 {
                     Email = _email,
@@ -29,11 +30,10 @@ namespace sctm.services.discordBot
 
                 HttpContent c = new StringContent(_json, Encoding.UTF8, "application/json");
 
-                var _res = await _httpClient.PostAsync(_loginUrl, c);
+                var _res = await _sctmHttpClient.PostAsync(_loginUrl, c);
                 if (_res.IsSuccessStatusCode)
                 {
                     _logger.LogInformation($"Getting JWT Token - success");
-
 
                     var _result = JsonConvert.DeserializeObject<SCTMLoginResponse>(await _res.Content.ReadAsStringAsync());
                     _token = _result.JWT;
@@ -46,6 +46,16 @@ namespace sctm.services.discordBot
                     _token = null;
                     _tokenDate = DateTime.MinValue;
                 }
+
+            } else if (_tokenDate < DateTime.Now.AddMinutes(-15))
+            {
+                // expired token
+                _token = null;
+                return await _GetSCTMToken();
+
+            } else
+            {
+                // valid token
             }
 
             return _token;

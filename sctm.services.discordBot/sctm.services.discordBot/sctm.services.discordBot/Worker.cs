@@ -56,10 +56,9 @@ namespace sctm.services.discordBot
             _dBuilder.AddInstance<Services>(_dService);
             _dBuilder.AddInstance<ILogger<Worker>>(_logger);
             _dBuilder.AddInstance<IConfiguration>(_config);
-
+            
             (_discord, _commands) = _dService.CreateDiscordClient(_dBuilder.Build());
-
-
+            
             _commands.RegisterCommands<MessageCommands>();
             _commands.RegisterCommands<AttachmentCommands>();
 

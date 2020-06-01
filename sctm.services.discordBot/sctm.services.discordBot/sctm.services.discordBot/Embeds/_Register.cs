@@ -1,4 +1,5 @@
-﻿using DSharpPlus.Entities;
+﻿using DSharpPlus.CommandsNext;
+using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using System.Threading;
 
@@ -6,19 +7,19 @@ namespace sctm.services.discordBot
 {
     public partial class Embeds
     {
-        public static DiscordEmbed Register(DiscordMessage e, string botAvatarUrl)
+        public static DiscordEmbed Register(CommandContext ctx)
         {
             
 
-            var _userName = e.Author.Username;
-            var _userDiscriminator = e.Author.Discriminator;
-            var _userAvatarUrl = e.Author.AvatarUrl;
-            var _userId = e.Author.Id;
-            var _channelName = e.Channel.Name;
-            var _channelId = e.Channel.Id;
-            var _serverName = e.Channel.Guild.Name;
-            var _serverAvatarUrl = e.Channel.Guild.IconUrl;
-            var _serverId = e.Channel.Guild.Id;
+            var _userName = ctx.Message.Author.Username;
+            var _userDiscriminator = ctx.Message.Author.Discriminator;
+            var _userAvatarUrl = ctx.Message.Author.AvatarUrl;
+            var _userId = ctx.Message.Author.Id;
+            var _channelName = ctx.Message.Channel.Name;
+            var _channelId = ctx.Message.Channel.Id;
+            var _serverName = ctx.Message.Channel.Guild.Name;
+            var _serverAvatarUrl = ctx.Message.Channel.Guild.IconUrl;
+            var _serverId = ctx.Message.Channel.Guild.Id;
 
             var _registerUrl = $"https://sctrademasters.com/register?ref=discord&server={_serverId}";
 
@@ -28,7 +29,7 @@ namespace sctm.services.discordBot
                 Description = $"As a member of {_serverName}, we're excited to invite you for early-access to Profession Leaderboards and Gameplay Tools for Star Citizen. [Click here]({_registerUrl}) to access the register page.\n\n We're still in heavy development, but here's what's coming:",
                 ThumbnailUrl = _serverAvatarUrl,
                 Color = DiscordColor.Red,
-                Footer = new DiscordEmbedBuilder.EmbedFooter { Text = "Star Citizen Tools by SC TradeMasters | Season 1 will end 1 June, 2020", IconUrl = botAvatarUrl }
+                Footer = new DiscordEmbedBuilder.EmbedFooter { Text = "Star Citizen Tools by SC TradeMasters | Season 1 will end 1 June, 2020", IconUrl = ctx.Client.CurrentUser.AvatarUrl }
             }
             .AddField(":pick: Mining *-alpha launching soon*", "**Mining experience & leaderboards** - Whether you're looking to level-up your mining skills, or compete with players across the verse in our leaderboards - this is the solution for you!")
             .AddField(":dollar: Trade *-In development*", "**Trade Resources & leaderboards** - If you're looking for resources to help make trade more profitable, or ready to compete against the titans of trade, our Trade and Economy community is the place for you.")

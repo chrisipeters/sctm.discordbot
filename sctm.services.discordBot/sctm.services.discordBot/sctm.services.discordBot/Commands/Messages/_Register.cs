@@ -1,6 +1,7 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
 using System.Threading.Tasks;
 
 namespace sctm.services.discordBot.Commands.Messages
@@ -12,8 +13,8 @@ namespace sctm.services.discordBot.Commands.Messages
         [Aliases("join")] // alternative names for the command
         public async Task AddCommands_Register(CommandContext ctx)
         {
-            var _dmChannel = await ctx.CommandsNext.Client.CreateDmAsync(ctx.User);
-            var _embed = Embeds.Register(ctx.Message, ctx.Client.CurrentUser.AvatarUrl);
+            var _dmChannel = await ctx.CommandsNext.Client.CreateDmAsync(ctx.Message.Author);
+            var _embed = Embeds.Register(ctx);
             await _dmChannel.SendMessageAsync(null, false, _embed);
         }
     }

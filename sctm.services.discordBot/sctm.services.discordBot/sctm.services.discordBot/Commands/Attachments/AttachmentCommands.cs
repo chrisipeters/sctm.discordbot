@@ -12,10 +12,6 @@ namespace sctm.services.discordBot.Commands.Attachments
         private IConfiguration _config;
         private ILogger<Worker> _logger;
         private Services _services;
-        private HttpClient _sctmClient;
-        private HttpClient _openClient;
-        private string _token;
-        private DateTime _tokenDate;
         private CommandContext _ctx;
 
         public AttachmentCommands(IConfiguration config, ILogger<Worker> logger, Services services)
@@ -23,10 +19,6 @@ namespace sctm.services.discordBot.Commands.Attachments
             _config = config;
             _logger = logger;
             _services = services;
-            _sctmClient = new HttpClient();
-            _openClient = new HttpClient();
-
-            _tokenDate = DateTime.MinValue;
         }
     }
 }

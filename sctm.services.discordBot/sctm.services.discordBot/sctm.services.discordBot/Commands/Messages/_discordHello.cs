@@ -1,5 +1,8 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.Entities;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.ComponentModel.Design;
@@ -21,7 +24,17 @@ namespace sctm.services.discordBot.Commands.Messages
 
             var _values = ctx.Message.Content;
 
-            if(_token == null || _tokenDate < DateTime.Now.AddMinutes(-15))
+            #region Get client
+
+            if (_services.GetSCTMClient() == null)
+            {
+                _logger.LogError("Unable to get SCTM Client");
+                await ctx.Message.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client,":cry:"));
+            }
+
+            #endregion
+
+            if (_token == null || _tokenDate < DateTime.Now.AddMinutes(-15))
             {
                 _token = await _services._GetSCTMToken();
                 if (_token != null) _tokenDate = DateTime.Now;
@@ -29,7 +42,7 @@ namespace sctm.services.discordBot.Commands.Messages
 
             if (_token != null && _tokenDate > DateTime.Now.AddMinutes(-15))
             {
-                _sctmClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+                (await _services.GetSCTMClient()).DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
                 var _req = new DiscordHelloRequest_POST
                 {
                     Code = args[1],
@@ -43,7 +56,7 @@ namespace sctm.services.discordBot.Commands.Messages
 
 
                 var _url = _config["SCTM:Urls:DiscordHello"];
-                var _result = await _sctmClient.PostAsync(_url, _content);
+                var _result = await (await _services.GetSCTMClient()).PostAsync(_url, _content);
                 if (_result.IsSuccessStatusCode)
                 {
                     await ctx.RespondAsync("Done. You're all set!");

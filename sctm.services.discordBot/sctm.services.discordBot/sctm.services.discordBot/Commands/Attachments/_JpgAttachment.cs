@@ -12,6 +12,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -22,29 +23,46 @@ namespace sctm.services.discordBot.Commands.Attachments
     {
         public async Task RunCommand_JpgAttachment(ulong itemId, MessageCreateEventArgs e)
         {
-            await e.Channel.TriggerTypingAsync();
-
-            if (_token == null || _tokenDate < DateTime.Now.AddMinutes(-15))
+            #region Check User
+            var _user = await _services.GetUser(e.Message.Author.Id);
+            if (_user == null)
             {
-                _token = await _services._GetSCTMToken();
-                if (_token != null) _tokenDate = DateTime.Now;
+                var _registerEmbed = Embeds.Register(_ctx);
+                var _dm = await _ctx.Client.CreateDmAsync(e.Author);
+                await _dm.SendMessageAsync(null, false, _registerEmbed);
+                await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":bust_in_silhouette:"));
+                return;
+            }
+            #endregion
+
+            #region Get client
+
+            if (_services.GetSCTMClient() == null)
+            {
+                _logger.LogError("Unable to get SCTM Client");
+                await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
             }
 
-            if (_tokenDate != null && _tokenDate > DateTime.Now.AddMinutes(-15))
-            {
-                _sctmClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+            #endregion
 
+            var form = new MultipartFormDataContent();
+            #region getContent
+
+            try
+            {
                 MemoryStream memStream = null;
+                StreamContent content = null;
                 #region get image to memory stream
 
                 var _imageUrl = e.Message.Attachments.Where(i => i.Id == itemId).Select(i => i.Url).FirstOrDefault();
                 if (_imageUrl == null)
                 {
                     _logger.LogError("Unable to get url for image");
+                    await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
                     return;
                 }
 
-                var _imageReq = await _openClient.GetAsync(_imageUrl);
+                var _imageReq = await _services.HttpClient.GetAsync(_imageUrl);
                 var _stream = await _imageReq.Content.ReadAsStreamAsync();
 
                 //create new MemoryStream object
@@ -56,15 +74,13 @@ namespace sctm.services.discordBot.Commands.Attachments
                 if (memStream == null)
                 {
                     _logger.LogError("Unable to create memory stream for image");
+                    await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
                     return;
                 }
                 #endregion
 
-                var _url = _config["SCTMUrls:ProcessLeaderboardImage"] + e.Author.Id;
+                content = new StreamContent(memStream);
 
-                var form = new MultipartFormDataContent();
-                var content = new StreamContent(memStream);
-                form.Add(content, "file");
                 content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
                 {
                     Name = "file",
@@ -72,66 +88,65 @@ namespace sctm.services.discordBot.Commands.Attachments
                 };
                 content.Headers.Remove("Content-Type");
                 content.Headers.Add("Content-Type", "image/jpg");
+                
+                form = new MultipartFormDataContent();
                 form.Add(content);
-
-
-                string _stringResult = null;
-                string _stringError = null;
-                var response = await _sctmClient.PostAsync(_url, form);
-                if (response.IsSuccessStatusCode)
-                {
-                    _stringResult = await response.Content.ReadAsStringAsync();
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                {
-                    // 401 
-                    // Authorization header has been set, but the server reports that it is missing.
-                    // It was probably stripped out due to a redirect.
-
-                    var finalRequestUri = response.RequestMessage.RequestUri; // contains the final location after following the redirect.
-
-                    if (finalRequestUri != new Uri(_url)) // detect that a redirect actually did occur.
-                    {
-                        // If this is public facing, add tests here to determine if Url should be trusted
-                        response = await _sctmClient.PostAsync(finalRequestUri, form);
-                        if (response.IsSuccessStatusCode)
-                        {
-                            _stringResult = await response.Content.ReadAsStringAsync();
-                        }
-                        else
-                        {
-                            // give up
-                            _stringError = await response.Content.ReadAsStringAsync();
-                            var f = "";
-                        }
-                    }
-                }
-                else
-                {
-                    var _errorContent = await response.Content.ReadAsStringAsync();
-                    ApiError _errorResponse = null; try { _errorResponse = JsonConvert.DeserializeObject<ApiError>(_errorContent); }
-                    catch (Exception ex)
-                    {
-                        var _m = ex.Message;
-                    }
-                    var f = "";
-                }
-
-                if(_stringError != null){
-                    await e.Channel.SendMessageAsync(_stringError);
-                }
-                else
-                {
-                    var _parsedResult = JsonConvert.DeserializeObject<ProcessScreenshotResult>(_stringResult);
-                    await SendSuccess(e.Message.Attachments.Where(i => i.Id == itemId).First(),e,_parsedResult);
-                }
-
-
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unable to create call content");
+                await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
+                return;
             }
 
 
+            #endregion
+
+            await e.Channel.TriggerTypingAsync();
+
+            String _resultString = null;
+            #region Make call
+
+            var _url = _config["SCTMUrls:ProcessLeaderboardImage"] + e.Author.Id;
+
+            var response = await MakeCall(await _services.GetSCTMClient(), _url, form);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Failed calling leaderboard API\n: " + (await response.Content.ReadAsStringAsync()));
+                await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
+                return;
+            } else
+            {
+                _resultString = await response.Content.ReadAsStringAsync();
+            }
+
+            #endregion
+
+            ProcessScreenshotResult result = null;
+            #region Parse result
+
+            result = JsonConvert.DeserializeObject<ProcessScreenshotResult>(_resultString);
+            await SendSuccess(e.Message.Attachments.Where(i => i.Id == itemId).First(), e, result);
+            #endregion
         }
 
+        private async Task<HttpResponseMessage> MakeCall(HttpClient client, string url, MultipartFormDataContent content)
+        {
+            var response = await client.PostAsync(url, content);
+            if (response.IsSuccessStatusCode) return response;
+            else if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                // 401 
+                // Authorization header has been set, but the server reports that it is missing.
+                // It was probably stripped out due to a redirect.
+
+                var finalRequestUri = response.RequestMessage.RequestUri;
+
+                if (finalRequestUri != new Uri(url)) return await MakeCall(client, finalRequestUri.ToString(), content);
+                else return response;
+            }
+            else return response;
+        }
 
         private async Task SendSuccess(DiscordAttachment image, MessageCreateEventArgs e, ProcessScreenshotResult result)
         {
@@ -176,11 +191,6 @@ namespace sctm.services.discordBot.Commands.Attachments
                     await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":question:"));
                     break;
             }
-        }
-
-        private async Task SendFail(MessageCreateEventArgs e, ProcessScreenshotResult result)
-        {
-
         }
     }
 }
