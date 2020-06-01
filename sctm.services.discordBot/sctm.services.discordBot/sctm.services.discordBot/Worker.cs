@@ -76,7 +76,7 @@ namespace sctm.services.discordBot
                         item.FileName.ToLower().EndsWith(".jpg")
                         || item.FileName.ToLower().EndsWith(".png")
                         )
-                            await _attachmentWorker.RunCommand_JpgAttachment(item.Id, e);
+                            await _attachmentWorker.RunCommand_JpgAttachment(_discord, item.Id, e);
                     }
                 }
             };

@@ -21,7 +21,7 @@ namespace sctm.services.discordBot.Commands.Attachments
 {
     public partial class AttachmentCommands
     {
-        public async Task RunCommand_JpgAttachment(ulong itemId, MessageCreateEventArgs e)
+        public async Task RunCommand_JpgAttachment(DiscordClient discord, ulong itemId, MessageCreateEventArgs e)
         {
             #region Check User
             var _user = await _services.GetUser(e.Message.Author.Id);
@@ -112,8 +112,11 @@ namespace sctm.services.discordBot.Commands.Attachments
             var response = await MakeCall(await _services.GetSCTMClient(), _url, form);
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("Failed calling leaderboard API\n: " + (await response.Content.ReadAsStringAsync()));
+                var _errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning("Failed calling leaderboard API\n: " + _errorContent);
                 await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
+                var _dm = await discord.CreateDmAsync(e.Author);
+                await _dm.SendMessageAsync(null,false,Embeds.LeaderboardError(e,e.Message.Attachments.Where(i => i.Id == itemId).First(), _errorContent));
                 return;
             } else
             {

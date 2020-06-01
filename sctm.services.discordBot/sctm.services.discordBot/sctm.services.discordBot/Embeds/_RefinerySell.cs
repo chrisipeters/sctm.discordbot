@@ -1,5 +1,6 @@
 ﻿using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using System.IO;
 
 namespace sctm.services.discordBot
 {
@@ -11,10 +12,10 @@ namespace sctm.services.discordBot
             var _userDiscriminator = e.Author.Discriminator;
             var _userAvatarUrl = e.Author.AvatarUrl;
             var _userId = e.Author.Id;
-            var _channelName = e.Channel.Name;
+            var _channelName = (e.Channel?.Name != null && e.Channel?.Name.Trim().Length > 0) ? e.Channel?.Name : "Direct User";
             var _channelId = e.Channel.Id;
-            var _guildName = e.Guild.Name;
-            var _guildId = e.Guild.Id;
+            var _guildName = (e.Guild?.Name != null) ? e.Guild.Name : "Direct User";
+            //var _guildId = e.Guild.Id;
 
             var _ret = new DiscordEmbedBuilder
             {
