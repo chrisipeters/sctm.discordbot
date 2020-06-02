@@ -13,6 +13,7 @@ namespace sctm.services.discordBot
     {
         public static DiscordEmbed RSILeaderboard(DiscordGuild guild, DiscordUser orgChampion, DiscordUser bot, LeaderboardInsight leaderboard, Leaderboard prevLeaderboard, DateTime dataDate)
         {
+            /*
             var _seenMembers = new Dictionary<string, int>();
             foreach (var map in leaderboard.Maps.Select(i => i.Value.current))
             {
@@ -42,6 +43,8 @@ namespace sctm.services.discordBot
 
 
             return _ret;
+            */
+            return null;
         }
     }
 }

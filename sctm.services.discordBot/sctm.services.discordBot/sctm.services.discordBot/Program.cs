@@ -2,6 +2,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.EventLog;
+using System.IO;
+using System.Reflection;
 
 namespace sctm.services.discordBot
 {
@@ -13,12 +15,14 @@ namespace sctm.services.discordBot
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
+
             Host.CreateDefaultBuilder(args)
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config
-                    .AddJsonFile("appsettings.json", true, true)
                     .AddJsonFile("c:\\dev\\appsettings.global.json", true, true)
+                    .SetBasePath(new FileInfo(Assembly.GetEntryAssembly().Location).DirectoryName)
+                    .AddJsonFile("appsettings.json", true, true)
                     .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
                     .AddEnvironmentVariables();
             })
