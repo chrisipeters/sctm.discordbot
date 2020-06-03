@@ -23,10 +23,16 @@ namespace sctm.services.discordBot.Commands.Attachments
     {
         public async Task RunCommand_JpgAttachment(DiscordClient discord, ulong itemId, MessageCreateEventArgs e)
         {
+            var _logAction = "RunCommand_JpgAttachment";
+            _logger.LogInformation($"{_logAction} - RunCommand_JpgAttachment Called");
+
+
             #region Check User
+            _logger.LogInformation($"{_logAction} - Checking User");
             var _user = await _services.GetUser(e.Message.Author.Id);
             if (_user == null)
             {
+                _logger.LogInformation($"{_logAction} - Unknown User");
                 var _registerEmbed = Embeds.Register(e);
                 var _dm = await discord.CreateDmAsync(e.Author);
                 await _dm.SendMessageAsync(null, false, _registerEmbed);
@@ -36,6 +42,7 @@ namespace sctm.services.discordBot.Commands.Attachments
             #endregion
 
             #region Get client
+            _logger.LogInformation($"{_logAction} - Getting SCTM Api client");
 
             if (_services.GetSCTMClient() == null)
             {
@@ -47,6 +54,8 @@ namespace sctm.services.discordBot.Commands.Attachments
 
             var form = new MultipartFormDataContent();
             #region getContent
+
+            _logger.LogInformation($"{_logAction} - Getting attachment");
 
             try
             {
@@ -106,6 +115,7 @@ namespace sctm.services.discordBot.Commands.Attachments
 
             String _resultString = null;
             #region Make call
+            _logger.LogInformation($"{_logAction} - Calling SCTM Api");
 
             var _url = _config["SCTM:Urls:ProcessLeaderboardImage"] + e.Author.Id;
 
@@ -127,9 +137,21 @@ namespace sctm.services.discordBot.Commands.Attachments
 
             ProcessScreenshotResult result = null;
             #region Parse result
+            _logger.LogInformation($"{_logAction} - Parsing result");
 
-            result = JsonConvert.DeserializeObject<ProcessScreenshotResult>(_resultString);
-            await SendSuccess(e.Message.Attachments.Where(i => i.Id == itemId).First(), e, result);
+            try
+            {
+                result = JsonConvert.DeserializeObject<ProcessScreenshotResult>(_resultString);
+                await SendSuccess(e.Message.Attachments.Where(i => i.Id == itemId).First(), e, result);
+
+                if (result == null) throw new Exception("Unable to parse result");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error parsing Api Resul: " + ex.Message);
+                await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
+            }
+            
             #endregion
         }
 

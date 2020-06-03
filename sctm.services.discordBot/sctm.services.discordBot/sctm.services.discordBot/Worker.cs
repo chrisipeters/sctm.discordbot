@@ -37,8 +37,8 @@ namespace sctm.services.discordBot
             ILoggerFactory loggerFactory = new LoggerFactory(new[]
             {
                 new EventLogLoggerProvider(new EventLogSettings{
-                LogName = "ChrispyKoala-DiscordBot",
-                SourceName = "Service"
+                LogName = _config["Discord:Logging:LogName"],
+                SourceName = _config["Discord:Logging:SourceName"]
                 })
             });
 
