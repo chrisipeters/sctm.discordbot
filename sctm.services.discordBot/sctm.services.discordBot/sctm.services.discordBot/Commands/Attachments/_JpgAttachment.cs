@@ -145,6 +145,7 @@ namespace sctm.services.discordBot.Commands.Attachments
                 await SendSuccess(e.Message.Attachments.Where(i => i.Id == itemId).First(), e, result);
 
                 if (result == null) throw new Exception("Unable to parse result");
+                else _logger.LogInformation($"{_logAction} - Parsing completed");
             }
             catch (Exception ex)
             {
@@ -179,40 +180,72 @@ namespace sctm.services.discordBot.Commands.Attachments
             switch (result.UploadResult.Type)
             {
                 case "Unknown":
+                    _logger.LogWarning("Unable to parse leaderboard entry of type: " + result.UploadResult.Type.ToString());
                     await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":question:"));
                     break;
                 case "TradeConsole_BUY":
+                    _logger.LogWarning("Unable to parse leaderboard entry of type: " + result.UploadResult.Type.ToString());
                     await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":arrows_counterclockwise:"));
                     break;
                 case "TradeConsole_SELL":
+                    _logger.LogWarning("Unable to parse leaderboard entry of type: " + result.UploadResult.Type.ToString());
                     await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":arrows_counterclockwise:"));
                     break;
                 case "TradeConsole_BUYConfirm":
+                    _logger.LogWarning("Unable to parse leaderboard entry of type: " + result.UploadResult.Type.ToString());
                     await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":arrows_counterclockwise:"));
                     break;
+                    _logger.LogWarning("Unable to parse leaderboard entry of type: " + result.UploadResult.Type.ToString());
                 case "TradeConsole_SELLConfirm":
                     await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":arrows_counterclockwise:"));
                     break;
                 case "FleetManager":
+                    _logger.LogWarning("Unable to parse leaderboard entry of type: " + result.UploadResult.Type.ToString());
                     await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":arrows_counterclockwise:"));
                     break;
                 case "RefineryTerminal_SELL":
-                    _json = result.UploadResult.Results.ToString().Replace("{{", "{").Replace("}}", "}");
-                    Sell _RefineryTerminal_SELL = JsonConvert.DeserializeObject<Sell>(_json);
+                    _logger.LogInformation("Attachment determined as: " + result.UploadResult.Type.ToString());
+                    try
+                    {
+                        _json = result.UploadResult.Results.ToString().Replace("{{", "{").Replace("}}", "}");
+                        Sell _RefineryTerminal_SELL = JsonConvert.DeserializeObject<Sell>(_json);
 
-                    var _embed_rts = Embeds.RefinerySellEmbed(_RefineryTerminal_SELL, e, image, result.RecordId);
-                    await e.Channel.SendMessageAsync(null, false, _embed_rts);
-                    await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":pick:"));
+                        var _embed_rts = Embeds.RefinerySellEmbed(_RefineryTerminal_SELL, e, image, result.RecordId);
+                        await e.Channel.SendMessageAsync(null, false, _embed_rts);
+
+                        _logger.LogInformation("Attachment parsing completed");
+
+                        await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":pick:"));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Error processing attachment as {result.UploadResult.Type.ToString()}:\n{ex.Message}");
+                        await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
+                    }
+                    
                     break;
                 case "RefineryTerminal_SELLConfirm":
-                    _json = result.UploadResult.Results.ToString().Replace("{{", "{").Replace("}}", "}");
-                    Confirm _RefineryTerminal_SELLConfirm = JsonConvert.DeserializeObject<Confirm>(_json);
+                    _logger.LogInformation("Attachment determined as: " + result.UploadResult.Type.ToString());
+                    try
+                    {
+                        _json = result.UploadResult.Results.ToString().Replace("{{", "{").Replace("}}", "}");
+                        Confirm _RefineryTerminal_SELLConfirm = JsonConvert.DeserializeObject<Confirm>(_json);
 
-                    var _embed_rtsc = Embeds.RefineryConfirm(_RefineryTerminal_SELLConfirm, e, image, result.RecordId);
-                    await e.Channel.SendMessageAsync(null, false, _embed_rtsc);
-                    await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":pick:"));
+                        var _embed_rtsc = Embeds.RefineryConfirm(_RefineryTerminal_SELLConfirm, e, image, result.RecordId);
+                        await e.Channel.SendMessageAsync(null, false, _embed_rtsc);
+
+                        _logger.LogInformation("Attachment parsing completed");
+
+                        await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":pick:"));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Error processing attachment as {result.UploadResult.Type.ToString()}:\n{ex.Message}");
+                        await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
+                    }
                     break;
                 default:
+                    _logger.LogWarning("Unable to parse leaderboard entry of type: " + result.UploadResult.Type.ToString());
                     await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":question:"));
                     break;
             }

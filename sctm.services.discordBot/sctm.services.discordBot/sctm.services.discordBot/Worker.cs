@@ -30,20 +30,11 @@ namespace sctm.services.discordBot
         public Worker(ILogger<Worker> logger, IConfiguration config)
         {
             _config = config;
+            _logger = logger;
         }
 
         public override Task StartAsync(CancellationToken cancellationToken)
         {
-            ILoggerFactory loggerFactory = new LoggerFactory(new[]
-            {
-                new EventLogLoggerProvider(new EventLogSettings{
-                LogName = _config["Discord:Logging:LogName"],
-                SourceName = _config["Discord:Logging:SourceName"]
-                })
-            });
-
-            _logger = loggerFactory.CreateLogger<Worker>();
-
             _logger.LogInformation("Provisioning Services");
             _httpClient = new HttpClient();
 

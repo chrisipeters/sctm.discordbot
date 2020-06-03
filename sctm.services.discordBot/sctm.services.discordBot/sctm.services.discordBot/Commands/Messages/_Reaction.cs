@@ -25,7 +25,7 @@ namespace sctm.services.discordBot.Commands.Messages
                 await RunCommand_ReactionToBot(discord,e, supportChannel);
             } else
             {
-                await e.Channel.SendMessageAsync($"I see your {_react} to someone else's message: {e.Message.Content?.Substring(0, 10)} ");
+                //await e.Channel.SendMessageAsync($"I see your {_react} to someone else's message: {e.Message.Content?.Substring(0, 10)} ");
             }
 
             
