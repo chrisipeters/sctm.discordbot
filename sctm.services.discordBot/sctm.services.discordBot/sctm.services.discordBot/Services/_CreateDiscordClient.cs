@@ -20,7 +20,7 @@ namespace sctm.services.discordBot
             _ccfg = new CommandsNextConfiguration
             {
                 // let's use the string prefix defined in config.json
-                StringPrefix = _config["CommandPrefix"],
+                StringPrefix = _config["Discord:CommandPrefix"],
 
                 // enable responding in direct messages
                 EnableDms = true,
