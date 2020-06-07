@@ -117,7 +117,7 @@ namespace sctm.services.discordBot.Commands.Attachments
             #region Make call
             _logger.LogInformation($"{_logAction} - Calling SCTM Api");
 
-            var _url = _config["SCTM:Urls:ProcessLeaderboardImage"] + e.Author.Id;
+            var _url = _config["SCTM:Urls:ProcessLeaderboardImage"] + $"{e.Author.Id}&teamId={e.Message.ChannelId}" ;
 
             var response = await MakeCall(await _services.GetSCTMClient(), _url, form);
             if (!response.IsSuccessStatusCode)

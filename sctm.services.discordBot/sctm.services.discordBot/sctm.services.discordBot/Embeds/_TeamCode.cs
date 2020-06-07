@@ -34,7 +34,7 @@ namespace sctm.services.discordBot
 
             var _ret = new DiscordEmbedBuilder
             {
-                Title = $"Welcome to Team: {serverName} > {channelName}",
+                Title = $"Welcome to: {serverName} > {channelName}",
                 Description = $"We use your Discord Channel to determine the Team you are competing for. As part of this channel you are competing for:",
                 ThumbnailUrl = serverAvatarUrl,
                 Color = DiscordColor.Purple,
