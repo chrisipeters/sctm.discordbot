@@ -35,7 +35,22 @@ namespace sctm.services.discordBot.Commands.Messages
         {
             var _react = e.Emoji;
 
-            if (e.Message.Embeds != null && e.Message.Embeds.Any())
+            // submit as trade terminal
+            if (_react == DiscordEmoji.FromName(discord, ":desktop:"))
+            {
+                
+
+            }
+
+            // submit as gallery
+            if (_react == DiscordEmoji.FromName(discord, ":camera:"))
+            {
+                await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":camera_with_flash:"));
+                await e.Message.RespondAsync("Gallery submissions are coming soon!");
+            }
+
+            // reaction to embed
+            else if (e.Message.Embeds != null && e.Message.Embeds.Any())
             {
                 var _embed = e.Message.Embeds[0];
                 var _splitDescription = _embed.Footer.Text.Split(">>");
