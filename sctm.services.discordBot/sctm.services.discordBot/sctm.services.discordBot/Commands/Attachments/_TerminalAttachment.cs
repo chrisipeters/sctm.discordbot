@@ -21,10 +21,10 @@ namespace sctm.services.discordBot.Commands.Attachments
 {
     public partial class AttachmentCommands
     {
-        public async Task RunCommand_JpgAttachment(DiscordClient discord, ulong itemId, MessageCreateEventArgs e)
+        public async Task RunCommand_TerminalAttachment(DiscordClient discord, ulong itemId, MessageCreateEventArgs e)
         {
-            var _logAction = "RunCommand_JpgAttachment";
-            _logger.LogInformation($"{_logAction} - RunCommand_JpgAttachment Called");
+            var _logAction = "RunCommand_TerminalAttachment";
+            _logger.LogInformation($"{_logAction} -  command called");
 
 
             #region Check User
@@ -117,7 +117,7 @@ namespace sctm.services.discordBot.Commands.Attachments
             #region Make call
             _logger.LogInformation($"{_logAction} - Calling SCTM Api");
 
-            var _url = _config["SCTM:Urls:ProcessLeaderboardImage"] + $"{e.Author.Id}&teamId={e.Message.ChannelId}" ;
+            var _url = _config["SCTM:Urls:Uploads"] + $"{e.Author.Id}&teamId={e.Message.ChannelId}" ; fj
 
             var response = await MakeCall(await _services.GetSCTMClient(), _url, form);
             if (!response.IsSuccessStatusCode)

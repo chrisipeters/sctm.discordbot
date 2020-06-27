@@ -19,28 +19,9 @@ namespace sctm.services.discordBot.Commands.Messages
         public async static Task RunCommand_Reaction(DiscordClient discord, MessageReactionAddEventArgs e, DiscordDmChannel supportChannel)
         {
             var _react = e.Emoji;
-            
-            if(e.Message.Author != null && e.Message.Author.IsCurrent)
-            {
-                await RunCommand_ReactionToBot(discord,e, supportChannel);
-            } else
-            {
-                //await e.Channel.SendMessageAsync($"I see your {_react} to someone else's message: {e.Message.Content?.Substring(0, 10)} ");
-            }
-
-            
-        }
-
-        private static async Task RunCommand_ReactionToBot(DiscordClient discord, MessageReactionAddEventArgs e, DiscordDmChannel supportChannel)
-        {
-            var _react = e.Emoji;
-
-            // submit as trade terminal
-            if (_react == DiscordEmoji.FromName(discord, ":desktop:"))
-            {
-                
-
-            }
+            var _reactName = _react.Name.ToLower();
+            var _reactDiscordName = _react.GetDiscordName();
+            var _terminal = DiscordEmoji.FromName(discord, ":desktop:");
 
             // submit as gallery
             if (_react == DiscordEmoji.FromName(discord, ":camera:"))
@@ -49,8 +30,31 @@ namespace sctm.services.discordBot.Commands.Messages
                 await e.Message.RespondAsync("Gallery submissions are coming soon!");
             }
 
+            // submit as trade terminal
+            else if (_react == DiscordEmoji.FromName(discord, ":computer:"))
+            {
+                await e.Message.RespondAsync("Processing image as a data screenshot");
+
+            }
+
+            else if (e.Message.Author != null && e.Message.Author.IsCurrent)
+            {
+                await RunCommand_ReactionToBot(discord, e, supportChannel);
+            }
+            else
+            {
+                //await e.Channel.SendMessageAsync($"I see your {_react} to someone else's message: {e.Message.Content?.Substring(0, 10)} ");
+            }
+
+
+        }
+
+        private static async Task RunCommand_ReactionToBot(DiscordClient discord, MessageReactionAddEventArgs e, DiscordDmChannel supportChannel)
+        {
+            var _react = e.Emoji;
+
             // reaction to embed
-            else if (e.Message.Embeds != null && e.Message.Embeds.Any())
+            if (e.Message.Embeds != null && e.Message.Embeds.Any())
             {
                 var _embed = e.Message.Embeds[0];
                 var _splitDescription = _embed.Footer.Text.Split(">>");
@@ -68,7 +72,7 @@ namespace sctm.services.discordBot.Commands.Messages
                 }
             }
 
-            
+
         }
     }
 }

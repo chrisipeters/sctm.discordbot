@@ -61,6 +61,7 @@ namespace sctm.services.discordBot
             {
                 if (e.Message.Attachments != null && e.Message.Attachments.Any())
                 {
+                    /* No longer processing images before they are reacted to
                     foreach (var item in e.Message.Attachments)
                     {
                         if (
@@ -69,6 +70,7 @@ namespace sctm.services.discordBot
                         )
                             await _attachmentWorker.RunCommand_JpgAttachment(_discord, item.Id, e);
                     }
+                    */
                 }
             };
             #endregion
