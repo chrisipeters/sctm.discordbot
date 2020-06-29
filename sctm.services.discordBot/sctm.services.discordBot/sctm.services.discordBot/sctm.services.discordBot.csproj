@@ -30,4 +30,8 @@
 
     <PackageReference Include="sctm.connectors.rsi.models" Version="0.0.21" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Commands\Messages\Reactions\" />
+  </ItemGroup>
 </Project>

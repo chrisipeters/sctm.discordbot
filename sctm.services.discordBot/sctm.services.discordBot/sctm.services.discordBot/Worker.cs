@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging.EventLog;
 using sctm.services.discordBot.Commands.Attachments;
 using sctm.services.discordBot.Commands.Interactive;
 using sctm.services.discordBot.Commands.Messages;
+using sctm.services.discordBot.Commands.Reactions;
 
 namespace sctm.services.discordBot
 {
@@ -47,39 +48,32 @@ namespace sctm.services.discordBot
             _dBuilder.AddInstance<Services>(_dService);
             _dBuilder.AddInstance<ILogger<Worker>>(_logger);
             _dBuilder.AddInstance<IConfiguration>(_config);
-            
+
             (_discord, _commands) = _dService.CreateDiscordClient(_dBuilder.Build());
-            
+
             _commands.RegisterCommands<MessageCommands>();
             _commands.RegisterCommands<AttachmentCommands>();
 
-            #region attachments
+            #region processors
 
-            var _attachmentWorker = new AttachmentCommands(_config, _logger, _dService);
+            var _processors = new Processors(_config, _logger, _dService, _supportChannel);
 
             _discord.MessageCreated += async e =>
             {
                 if (e.Message.Attachments != null && e.Message.Attachments.Any())
                 {
-                    /* No longer processing images before they are reacted to
-                    foreach (var item in e.Message.Attachments)
-                    {
-                        if (
-                        item.FileName.ToLower().EndsWith(".jpg")
-                        || item.FileName.ToLower().EndsWith(".png")
-                        )
-                            await _attachmentWorker.RunCommand_JpgAttachment(_discord, item.Id, e);
-                    }
-                    */
+                    await _processors.ProcessWithOCR(_discord, e);
                 }
             };
             #endregion
 
             #region reactions
 
+            var _reactionsWorker = new ReactionCommands(_config, _logger, _dService);
+
             _discord.MessageReactionAdded += async e =>
             {
-                await MessageCommands.RunCommand_Reaction(_discord, e, _supportChannel);
+                await _reactionsWorker.RunCommand_Reaction(_discord, e, _supportChannel);
             };
 
             #endregion
