@@ -4,6 +4,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Serilog;
 using System;
 using System.ComponentModel.Design;
 using System.Net.Http;
@@ -24,7 +25,7 @@ namespace sctm.services.discordBot.Commands.Messages
 
             if (_services.GetSCTMClient() == null)
             {
-                _logger.LogError("Unable to get SCTM Client");
+                Log.Error("Unable to get SCTM Client");
                 await ctx.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)ctx.Client, ":cry:"));
             }
 
@@ -38,7 +39,7 @@ namespace sctm.services.discordBot.Commands.Messages
 
             if (_services.GetSCTMClient() == null)
             {
-                _logger.LogError("Unable to get SCTM Client");
+                Log.Error("Unable to get SCTM Client");
                 await ctx.Message.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client,":cry:"));
             }
 

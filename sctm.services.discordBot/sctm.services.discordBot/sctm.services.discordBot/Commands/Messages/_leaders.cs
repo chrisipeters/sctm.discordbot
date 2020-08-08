@@ -2,7 +2,7 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using System;
 using System.Net;
 using System.Net.Http;
@@ -21,7 +21,7 @@ namespace sctm.services.discordBot.Commands.Messages
 
             if (_services.GetSCTMClient() == null)
             {
-                _logger.LogError("Unable to get SCTM Client");
+                Log.Error("Unable to get SCTM Client");
                 await ctx.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)ctx.Client, ":cry:"));
                 return;
             }

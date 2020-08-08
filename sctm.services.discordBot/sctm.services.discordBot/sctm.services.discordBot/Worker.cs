@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
@@ -11,11 +10,11 @@ using DSharpPlus.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.EventLog;
 using sctm.services.discordBot.Commands.Attachments;
-using sctm.services.discordBot.Commands.Interactive;
 using sctm.services.discordBot.Commands.Messages;
 using sctm.services.discordBot.Commands.Reactions;
+using Serilog;
+using Serilog.Core;
 
 namespace sctm.services.discordBot
 {
@@ -26,27 +25,32 @@ namespace sctm.services.discordBot
         private DiscordClient _discord;
         private CommandsNextModule _commands;
         private DiscordDmChannel _supportChannel;
-        private ILogger<Worker> _logger;
 
         public Worker(ILogger<Worker> logger, IConfiguration config)
         {
             _config = config;
-            _logger = logger;
+
+            var _sourceName = _config["Logging:SourceName"];
+            var _logName = _config["Logging:LogName"];
+
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.EventLog(_sourceName, _logName, manageEventSource: false)
+                .CreateLogger();
+
         }
 
         public override Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Provisioning Services");
+            Log.Information("Provisioning Services");
             _httpClient = new HttpClient();
 
-            _logger.LogInformation("Configuring Discord client");
-            var _dService = new Services(_config, _logger);
+            Log.Information("Configuring Discord client");
+            var _dService = new Services(_config);
 
 
             var _dBuilder = new DependencyCollectionBuilder();
 
             _dBuilder.AddInstance<Services>(_dService);
-            _dBuilder.AddInstance<ILogger<Worker>>(_logger);
             _dBuilder.AddInstance<IConfiguration>(_config);
 
             (_discord, _commands) = _dService.CreateDiscordClient(_dBuilder.Build());
@@ -56,7 +60,7 @@ namespace sctm.services.discordBot
 
             #region processors
 
-            var _processors = new Processors(_config, _logger, _dService, _supportChannel);
+            var _processors = new Processors(_config, _dService, _supportChannel);
 
             _discord.MessageCreated += async e =>
             {
@@ -69,7 +73,7 @@ namespace sctm.services.discordBot
 
             #region reactions
 
-            var _reactionsWorker = new ReactionCommands(_config, _logger, _dService);
+            var _reactionsWorker = new ReactionCommands(_config, _dService);
 
             _discord.MessageReactionAdded += async e =>
             {
@@ -94,7 +98,7 @@ namespace sctm.services.discordBot
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error setting up support channels");
+                Log.Error(ex, "Error setting up support channels");
             }
 
             return base.StartAsync(cancellationToken);
@@ -105,7 +109,7 @@ namespace sctm.services.discordBot
             /*
             while (!stoppingToken.IsCancellationRequested)
             {
-                _logger.LogInformation("ChrispyKoala running at: {time}", DateTimeOffset.Now);
+                Log.Information("ChrispyKoala running at: {time}", DateTimeOffset.Now);
                 await Task.Delay(30000, stoppingToken);
             }
             */
@@ -114,7 +118,7 @@ namespace sctm.services.discordBot
         public override Task StopAsync(CancellationToken cancellationToken)
         {
             _supportChannel.SendMessageAsync($"I'm shutting down!");
-            _logger.LogInformation("disconnecting from Discord");
+            Log.Information("disconnecting from Discord");
             _discord.DisconnectAsync();
             Task.Delay(1000);
 

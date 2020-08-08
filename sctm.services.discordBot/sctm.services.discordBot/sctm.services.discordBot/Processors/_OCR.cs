@@ -1,17 +1,13 @@
 ﻿using DSharpPlus;
-using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using sctm.services.discordBot.Models;
+using Serilog;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace sctm.services.discordBot
@@ -21,7 +17,7 @@ namespace sctm.services.discordBot
         public async Task ProcessWithOCR(DiscordClient discord, MessageCreateEventArgs e)
         {
             var _logAction = "ProcessWithOCR";
-            _logger.LogInformation($"{_logAction} -  command called");
+            Log.Information($"{_logAction} -  command called");
 
 
             // Only process if there is 1 and only 1 attachment
@@ -41,19 +37,19 @@ namespace sctm.services.discordBot
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error sending dm to notify of invalid number of attachmentgs: " + ex.Message);
+                Log.Error(ex, "Error sending dm to notify of invalid number of attachmentgs: " + ex.Message);
                 return;
             }
 
 
             #region Check User
-            _logger.LogInformation($"{_logAction} - Checking User");
+            Log.Information($"{_logAction} - Checking User");
             try
             {
                 var _user = await _services.GetUser(e.Message.Author.Id);
                 if (_user == null)
                 {
-                    _logger.LogInformation($"{_logAction} - Unknown User");
+                    Log.Information($"{_logAction} - Unknown User");
                     var _registerEmbed = Embeds.Register(e.Message.Channel.Guild.Name, e.Message.Channel.Guild.IconUrl, e.Message.Channel.Guild.Id, discord.CurrentUser.AvatarUrl);
                     var _dm = await discord.CreateDmAsync(e.Message.Author);
                     await _dm.SendMessageAsync(null, false, _registerEmbed);
@@ -63,18 +59,18 @@ namespace sctm.services.discordBot
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error checking for valid user: " + ex.Message);
+                Log.Error(ex, "Error checking for valid user: " + ex.Message);
                 return;
             }
 
             #endregion
 
             #region Get client
-            _logger.LogInformation($"{_logAction} - Getting SCTM Api client");
+            Log.Information($"{_logAction} - Getting SCTM Api client");
 
             if (_services.GetSCTMClient() == null)
             {
-                _logger.LogError("Unable to get SCTM Client");
+                Log.Error("Unable to get SCTM Client");
                 await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
             }
 
@@ -83,7 +79,7 @@ namespace sctm.services.discordBot
             var form = new MultipartFormDataContent();
             #region Get content
 
-            _logger.LogInformation($"{_logAction} - Getting attachment");
+            Log.Information($"{_logAction} - Getting attachment");
 
             try
             {
@@ -94,7 +90,7 @@ namespace sctm.services.discordBot
                 var _imageUrl = e.Message.Attachments[0].Url;
                 if (_imageUrl == null)
                 {
-                    _logger.LogError("Unable to get url for image");
+                    Log.Error("Unable to get url for image");
                     await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
                     return;
                 }
@@ -110,7 +106,7 @@ namespace sctm.services.discordBot
 
                 if (memStream == null)
                 {
-                    _logger.LogError("Unable to create memory stream for image");
+                    Log.Error("Unable to create memory stream for image");
                     await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
                     return;
                 }
@@ -131,7 +127,7 @@ namespace sctm.services.discordBot
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unable to create call content");
+                Log.Error(ex, "Unable to create call content");
                 await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
                 return;
             }
@@ -146,7 +142,7 @@ namespace sctm.services.discordBot
             var _url = _config["SCTM:Urls:Uploads"].TrimEnd('/') + $"/images/tradingconsole?teamId={e.Message.ChannelId}&discordUser={e.Message.Author.Id}";
             if (_url == null)
             {
-                _logger.LogError("Unable to get SCTM Uploads Url from config");
+                Log.Error("Unable to get SCTM Uploads Url from config");
                 await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
                 return;
             }
@@ -181,7 +177,7 @@ namespace sctm.services.discordBot
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, "Unable to parse data results: " + ex.Message);
+                            Log.Error(ex, "Unable to parse data results: " + ex.Message);
                         }
                         
                         break;
@@ -193,7 +189,7 @@ namespace sctm.services.discordBot
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, "Unable to parse data results: " + ex.Message);
+                            Log.Error(ex, "Unable to parse data results: " + ex.Message);
                         }
                         break;
                     default:

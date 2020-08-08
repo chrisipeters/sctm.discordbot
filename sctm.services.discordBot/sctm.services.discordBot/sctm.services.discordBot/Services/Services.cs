@@ -1,7 +1,6 @@
 ﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Net.Http;
 
@@ -11,7 +10,6 @@ namespace sctm.services.discordBot
     {
         private IConfiguration _config;
         private DiscordConfiguration _cfg;
-        private ILogger<Worker> _logger;
         public HttpClient HttpClient;
         private HttpClient _sctmHttpClient;
         private DiscordClient _discord;
@@ -20,7 +18,7 @@ namespace sctm.services.discordBot
         private string _token;
         private DateTime _tokenDate;
 
-        public Services(IConfiguration config, ILogger<Worker> logger)
+        public Services(IConfiguration config)
         {
             _config = config;
             _cfg = new DiscordConfiguration
@@ -33,7 +31,6 @@ namespace sctm.services.discordBot
                 UseInternalLogHandler = false
             };
 
-            _logger = logger;
             HttpClient = new HttpClient();
             _sctmHttpClient = new HttpClient();
         }

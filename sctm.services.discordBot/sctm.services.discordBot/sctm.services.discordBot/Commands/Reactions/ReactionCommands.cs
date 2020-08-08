@@ -3,10 +3,8 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using System;
+using Serilog.Core;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace sctm.services.discordBot.Commands.Reactions
@@ -14,14 +12,12 @@ namespace sctm.services.discordBot.Commands.Reactions
     public partial class ReactionCommands
     {
         private IConfiguration _config;
-        private ILogger<Worker> _logger;
         private Services _services;
         private CommandContext _ctx;
 
-        public ReactionCommands(IConfiguration config, ILogger<Worker> logger, Services services)
+        public ReactionCommands(IConfiguration config, Services services)
         {
             _config = config;
-            _logger = logger;
             _services = services;
         }
 

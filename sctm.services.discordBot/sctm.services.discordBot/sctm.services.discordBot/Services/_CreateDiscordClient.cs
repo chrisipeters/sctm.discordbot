@@ -4,7 +4,7 @@ using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Net.WebSocket;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using System.Threading.Tasks;
 
 namespace sctm.services.discordBot
@@ -42,35 +42,35 @@ namespace sctm.services.discordBot
 
         private Task Client_Ready(ReadyEventArgs e)
         {
-            _logger.LogInformation("Client is ready to process events");
+            Log.Information("Client is ready to process events");
 
             return Task.CompletedTask;
         }
 
         private Task Client_GuildAvailable(GuildCreateEventArgs e)
         {
-            _logger.LogInformation($"Guild available: {e.Guild.Name}");
+            Log.Information($"Guild available: {e.Guild.Name}");
 
             return Task.CompletedTask;
         }
 
         private Task Client_ClientError(ClientErrorEventArgs e)
         {
-            _logger.LogError(e.Exception, $"Client: {e.Client.CurrentApplication.Name} experienced an exception error");
+            Log.Error(e.Exception, $"Client: {e.Client.CurrentApplication.Name} experienced an exception error");
 
             return Task.CompletedTask;
         }
 
         private Task Commands_CommandExecuted(CommandExecutionEventArgs e)
         {
-            _logger.LogInformation($"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'");
+            Log.Information($"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'");
 
             return Task.CompletedTask;
         }
 
         private async Task Commands_CommandErrored(CommandErrorEventArgs e)
         {
-            _logger.LogError(e.Exception, $"Command: {e.Command.Name}  experienced an exception error");
+            Log.Error(e.Exception, $"Command: {e.Command.Name}  experienced an exception error");
 
             // let's check if the error is a result of lack
             // of required permissions

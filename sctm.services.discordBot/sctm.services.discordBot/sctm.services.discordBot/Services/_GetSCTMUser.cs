@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using sctm.services.discordBot.Models;
+using Serilog;
 using System;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -35,7 +35,7 @@ namespace sctm.services.discordBot
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error getting user from SCTM");
+                        Log.Error(ex, "Error getting user from SCTM");
                         _ret = null;
                     }
                 }

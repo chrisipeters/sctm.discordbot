@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using Serilog;
 using System;
 using System.Net.Http;
 using System.Text;
@@ -15,7 +15,7 @@ namespace sctm.services.discordBot
             var _email = _config["SCTM:Account:Email"]; ;
             var _password = _config["SCTM:Account:Password"];
 
-            _logger.LogInformation($"Getting JWT Token from: {_loginUrl}");
+            Log.Information($"Getting JWT Token from: {_loginUrl}");
 
             if(_token == null)
             {
@@ -33,7 +33,7 @@ namespace sctm.services.discordBot
                 var _res = await _sctmHttpClient.PostAsync(_loginUrl, c);
                 if (_res.IsSuccessStatusCode)
                 {
-                    _logger.LogInformation($"Getting JWT Token - success");
+                    Log.Information($"Getting JWT Token - success");
 
                     var _result = JsonConvert.DeserializeObject<SCTMLoginResponse>(await _res.Content.ReadAsStringAsync());
                     _token = _result.JWT;
@@ -41,7 +41,7 @@ namespace sctm.services.discordBot
                 }
                 else
                 {
-                    _logger.LogError($"Getting JWT Token - Error");
+                    Log.Error($"Getting JWT Token - Error");
 
                     _token = null;
                     _tokenDate = DateTime.MinValue;
