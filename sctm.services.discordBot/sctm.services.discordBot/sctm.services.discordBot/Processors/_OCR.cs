@@ -2,9 +2,11 @@
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using Newtonsoft.Json;
+using sctm.connectors.sctmDB.Models.OCREntries;
 using sctm.services.discordBot.Models;
 using Serilog;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -19,188 +21,138 @@ namespace sctm.services.discordBot
             var _logAction = "ProcessWithOCR";
             Log.Information($"{_logAction} -  command called");
 
+            var _userId = e.Author.Id;
+            var _teamId = e.Message.ChannelId;
+            var _orgId = e.Message.Channel.GuildId;
 
-            // Only process if there is 1 and only 1 attachment
-            var _dmAuthor = await discord.CreateDmAsync(e.Author);
-            try
-            {
-                if (e.Message == null || e.Message.Attachments == null || e.Message.Attachments.Count == 0)
-                {
-                    await _dmAuthor.SendMessageAsync("sorry, I can't find any image on that message to process");
-                    return;
-                }
-                else if (e.Message.Attachments.Count > 1)
-                {
-                    await _dmAuthor.SendMessageAsync("sorry, I can only process messages with a single image on them. Please submit your images one at a time.");
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Error sending dm to notify of invalid number of attachmentgs: " + ex.Message);
-                return;
-            }
+            var _client = await _services.GetSCTMClient();
 
 
-            #region Check User
-            Log.Information($"{_logAction} - Checking User");
-            try
-            {
-                var _user = await _services.GetUser(e.Message.Author.Id);
-                if (_user == null)
-                {
-                    Log.Information($"{_logAction} - Unknown User");
-                    var _registerEmbed = Embeds.Register(e.Message.Channel.Guild.Name, e.Message.Channel.Guild.IconUrl, e.Message.Channel.Guild.Id, discord.CurrentUser.AvatarUrl);
-                    var _dm = await discord.CreateDmAsync(e.Message.Author);
-                    await _dm.SendMessageAsync(null, false, _registerEmbed);
-                    await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":bust_in_silhouette:"));
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Error checking for valid user: " + ex.Message);
-                return;
-            }
-
-            #endregion
-
-            #region Get client
-            Log.Information($"{_logAction} - Getting SCTM Api client");
-
-            if (_services.GetSCTMClient() == null)
-            {
-                Log.Error("Unable to get SCTM Client");
-                await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
-            }
-
-            #endregion
-
+            // prepare image
             var form = new MultipartFormDataContent();
-            #region Get content
-
-            Log.Information($"{_logAction} - Getting attachment");
-
-            try
+            if (_client != null)
             {
-                MemoryStream memStream = null;
-                StreamContent content = null;
-                #region get image to memory stream
-
-                var _imageUrl = e.Message.Attachments[0].Url;
-                if (_imageUrl == null)
+                try
                 {
-                    Log.Error("Unable to get url for image");
+                    MemoryStream memStream = null;
+                    StreamContent content = null;
+                    #region get image to memory stream
+
+                    var _imageUrl = e.Message.Attachments[0].Url;
+                    if (_imageUrl == null)
+                    {
+                        Log.Error("Unable to get url for image");
+                        await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
+                        return;
+                    }
+
+                    var _simpleClient = new HttpClient();
+
+                    var _imageReq = await _simpleClient.GetAsync(_imageUrl);
+                    var _stream = await _imageReq.Content.ReadAsStreamAsync();
+
+                    //create new MemoryStream object
+                    memStream = new MemoryStream();
+                    memStream.SetLength(_stream.Length);
+                    //read file to MemoryStream
+                    _stream.Read(memStream.GetBuffer(), 0, (int)_stream.Length);
+
+                    if (memStream == null)
+                    {
+                        Log.Error("Unable to create memory stream for image");
+                        await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
+                        return;
+                    }
+                    #endregion
+
+                    content = new StreamContent(memStream);
+
+                    content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+                    {
+                        Name = "file",
+                        FileName = e.Message.Attachments[0].FileName
+                    };
+                    content.Headers.Remove("Content-Type");
+                    content.Headers.Add("Content-Type", "image/jpg");
+
+                    form = new MultipartFormDataContent();
+                    form.Add(content);
+
+                    _simpleClient.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Unable to create call content");
                     await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
                     return;
                 }
+            }
 
-                var _imageReq = await _services.HttpClient.GetAsync(_imageUrl);
-                var _stream = await _imageReq.Content.ReadAsStreamAsync();
 
-                //create new MemoryStream object
-                memStream = new MemoryStream();
-                memStream.SetLength(_stream.Length);
-                //read file to MemoryStream
-                _stream.Read(memStream.GetBuffer(), 0, (int)_stream.Length);
+            // make the call
+            TradingConsole_POST_Result _data = null;
+            if (_client != null)
+            {
+                var _url = _config["SCTM:Urls:Uploads"].TrimEnd('/') + $"/images/terminal?user={_userId}&team={_teamId}&organization={_orgId}";
 
-                if (memStream == null)
+                var _res = await Services.MakeHttpPostCall(_client, _url, form);
+
+                var _content = await _res.Content.ReadAsStringAsync();
+
+                if(_res.IsSuccessStatusCode)
                 {
-                    Log.Error("Unable to create memory stream for image");
-                    await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
-                    return;
+                    _data = JsonConvert.DeserializeObject<TradingConsole_POST_Result>(_content);
+                } else
+                {
+                    // fail
+                    try
+                    {
+                        if(_content.Contains("I'm sorry Dave, I cannot process this file for you again"))
+                        {
+                            await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":cry:"));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "{logAction}: Exception encountered making call to uploads API", _logAction);
+                    }
                 }
-                #endregion
+                _client.Dispose();
+            }
 
-                content = new StreamContent(memStream);
-
-                content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+            // send embed
+            DiscordEmbed _embed = null;
+            if (_data != null)
+            {
+                switch (_data.ImagaData.ScreenshotType)
                 {
-                    Name = "file",
-                    FileName = e.Message.Attachments[0].FileName
-                };
-                content.Headers.Remove("Content-Type");
-                content.Headers.Add("Content-Type", "image/jpg");
-
-                form = new MultipartFormDataContent();
-                form.Add(content);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Unable to create call content");
-                await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
-                return;
-            }
-
-
-            #endregion
-
-            await e.Channel.TriggerTypingAsync();
-
-            #region Make HTTP Call
-
-            var _url = _config["SCTM:Urls:Uploads"].TrimEnd('/') + $"/images/tradingconsole?teamId={e.Message.ChannelId}&discordUser={e.Message.Author.Id}";
-            if (_url == null)
-            {
-                Log.Error("Unable to get SCTM Uploads Url from config");
-                await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
-                return;
-            }
-
-            var _res = await Services.MakeHttpPostCall(await _services.GetSCTMClient(), _url, form);
-            var _content = await _res.Content.ReadAsStringAsync();
-            if (_res.IsSuccessStatusCode)
-            {
-                
-                await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":white_check_mark:"));
-                var _parsed = JsonConvert.DeserializeObject<ProcessScreenshotResult>(_content);
-                DiscordEmbed _embed = null;
-                switch (_parsed.ScreenshotType)
-                {
-                    case connectors.azureComputerVision.models.ScreenShotTypes.Unknown:
+                    case ScreenShotTypes.Unknown:
                         break;
-                    case connectors.azureComputerVision.models.ScreenShotTypes.TradeConsole_BUY:
+                    case ScreenShotTypes.TradeConsole_BUY:
                         break;
-                    case connectors.azureComputerVision.models.ScreenShotTypes.TradeConsole_SELL:
+                    case ScreenShotTypes.TradeConsole_SELL:
                         break;
-                    case connectors.azureComputerVision.models.ScreenShotTypes.TradeConsole_BUYConfirm:
+                    case ScreenShotTypes.TradeConsole_BUYConfirm:
                         break;
-                    case connectors.azureComputerVision.models.ScreenShotTypes.TradeConsole_SELLConfirm:
+                    case ScreenShotTypes.TradeConsole_SELLConfirm:
                         break;
-                    case connectors.azureComputerVision.models.ScreenShotTypes.FleetManager:
+                    case ScreenShotTypes.FleetManager:
                         break;
-                    case connectors.azureComputerVision.models.ScreenShotTypes.RefineryTerminal_SELL:
-                        try
-                        {
-                            _embed = Embeds.RefinerySellEmbed(JsonConvert.DeserializeObject<connectors.azureComputerVision.models.Terminals.Refinery.Sell>(_parsed.Data.ToString()), e, e.Message.Attachments[0], "abcde");
-                            await e.Message.RespondAsync(null, false, _embed);
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Error(ex, "Unable to parse data results: " + ex.Message);
-                        }
-                        
+                    case ScreenShotTypes.RefineryTerminal_SELL:
+                        var _rSellData = JsonConvert.DeserializeObject<RefineryTerminal_SellScreenRecord>(_data.DatabaseRecord.ToString());
+                        _embed = Embeds.RefinerySellEmbed(_rSellData, e, e.Message.Attachments[0], _rSellData.Id);
                         break;
-                    case connectors.azureComputerVision.models.ScreenShotTypes.RefineryTerminal_SELLConfirm:
-                        try
-                        {
-                            _embed = Embeds.RefineryConfirm(JsonConvert.DeserializeObject<connectors.azureComputerVision.models.Terminals.Refinery.Confirm>(_parsed.Data.ToString()), e, e.Message.Attachments[0], "abcde");
-                            await e.Message.RespondAsync(null, false, _embed);
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Error(ex, "Unable to parse data results: " + ex.Message);
-                        }
+                    case ScreenShotTypes.RefineryTerminal_SELLConfirm:
+                        var _rConfirmData = JsonConvert.DeserializeObject<RefineryTerminal_ConfirmScreenRecord>(_data.DatabaseRecord.ToString());
+                        _embed = Embeds.RefineryConfirm(_rConfirmData, e, e.Message.Attachments[0], _rConfirmData.Id);
                         break;
                     default:
                         break;
                 }
+
+                if(_embed != null) await e.Message.RespondAsync(null, false, _embed);
             }
-            else
-            {
-                var f = "";
-            }
-            #endregion
+
         }
     }
 }

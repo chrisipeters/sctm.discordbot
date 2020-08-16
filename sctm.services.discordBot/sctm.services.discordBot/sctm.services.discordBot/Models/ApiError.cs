@@ -28,4 +28,7 @@ namespace sctm.services.discordBot.Models
         [JsonProperty("file")]
         public string[] File { get; set; }
     }
+
+
+    
 }

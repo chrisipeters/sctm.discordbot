@@ -24,16 +24,10 @@ namespace sctm.services.discordBot.Commands.Reactions
         public async Task RunCommand_Reaction(DiscordClient discord, MessageReactionAddEventArgs e, DiscordDmChannel supportChannel)
         {
             var _react = e.Emoji;
-            var _ocrReaction = new List<DiscordEmoji> { DiscordEmoji.FromName(discord, ":mag:"), DiscordEmoji.FromName(discord, ":mag_right:") };
             var _galleryReaction = new List<DiscordEmoji> { DiscordEmoji.FromName(discord, ":camera:") };
             var _errorReaction = new List<DiscordEmoji> { DiscordEmoji.FromName(discord, ":thumbsdown:") };
 
-            if (_ocrReaction.Contains(_react))
-            {
-                // ocr processor
-                await RunCommand_OCR(discord, e, supportChannel);
-            }
-            else if (_galleryReaction.Contains(_react))
+            if (_galleryReaction.Contains(_react))
             {
                 // gallery processor
                 await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":camera_with_flash:"));

@@ -1,11 +1,12 @@
 ﻿using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using sctm.connectors.sctmDB.Models.OCREntries;
 
 namespace sctm.services.discordBot
 {
     public partial class Embeds
     {
-        public static DiscordEmbed RefineryConfirm(sctm.connectors.azureComputerVision.models.Terminals.Refinery.Confirm data, MessageCreateEventArgs e, DiscordAttachment attachment, string recordId)
+        public static DiscordEmbed RefineryConfirm(RefineryTerminal_ConfirmScreenRecord data, MessageCreateEventArgs e, DiscordAttachment attachment, int recordId)
         {
             var _userName = e.Author.Username;
             var _userDiscriminator = e.Author.Discriminator;

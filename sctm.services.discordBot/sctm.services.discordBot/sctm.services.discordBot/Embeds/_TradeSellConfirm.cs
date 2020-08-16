@@ -5,7 +5,8 @@ namespace sctm.services.discordBot
 {
     public partial class Embeds
     {
-        public static DiscordEmbed TradeSELLConfirm(sctm.connectors.azureComputerVision.models.Terminals.Trade.Confirm data, MessageCreateEventArgs e, DiscordAttachment attachment, string recordId)
+     /*   
+         public static DiscordEmbed TradeSELLConfirm(sctm.connectors.azureComputerVision.models.Terminals.Trade.Confirm data, MessageCreateEventArgs e, DiscordAttachment attachment, string recordId)
         {
             var _userName = e.Author.Username;
             var _userDiscriminator = e.Author.Discriminator;
@@ -34,5 +35,6 @@ namespace sctm.services.discordBot
 
             return _ret;
         }
+     */
     }
 }

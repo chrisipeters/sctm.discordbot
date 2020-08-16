@@ -30,7 +30,8 @@ namespace sctm.services.discordBot
 
                 HttpContent c = new StringContent(_json, Encoding.UTF8, "application/json");
 
-                var _res = await _sctmHttpClient.PostAsync(_loginUrl, c);
+                var _client = new HttpClient();
+                var _res = await _client.PostAsync(_loginUrl, c);
                 if (_res.IsSuccessStatusCode)
                 {
                     Log.Information($"Getting JWT Token - success");
@@ -46,6 +47,8 @@ namespace sctm.services.discordBot
                     _token = null;
                     _tokenDate = DateTime.MinValue;
                 }
+
+                _client.Dispose();
 
             } else if (_tokenDate < DateTime.Now.AddMinutes(-15))
             {

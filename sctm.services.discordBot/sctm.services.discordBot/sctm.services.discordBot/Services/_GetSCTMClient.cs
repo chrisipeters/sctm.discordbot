@@ -11,8 +11,9 @@ namespace sctm.services.discordBot
             if (await _GetSCTMToken() == null) return null;
             else
             {
-                _sctmHttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
-                return _sctmHttpClient;
+                var _client = new HttpClient();
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+                return _client;
             }
         }
     }

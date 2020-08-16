@@ -10,8 +10,6 @@ namespace sctm.services.discordBot
     {
         private IConfiguration _config;
         private DiscordConfiguration _cfg;
-        public HttpClient HttpClient;
-        private HttpClient _sctmHttpClient;
         private DiscordClient _discord;
         private CommandsNextConfiguration _ccfg;
         private CommandsNextModule _commands;
@@ -30,9 +28,6 @@ namespace sctm.services.discordBot
                 LogLevel = DSharpPlus.LogLevel.Debug,
                 UseInternalLogHandler = false
             };
-
-            HttpClient = new HttpClient();
-            _sctmHttpClient = new HttpClient();
         }
     }
 }

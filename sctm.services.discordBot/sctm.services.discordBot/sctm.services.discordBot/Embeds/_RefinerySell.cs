@@ -1,12 +1,13 @@
 ﻿using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using sctm.connectors.sctmDB.Models.OCREntries;
 using System.IO;
 
 namespace sctm.services.discordBot
 {
     public partial class Embeds
     {
-        public static DiscordEmbed RefinerySellEmbed(sctm.connectors.azureComputerVision.models.Terminals.Refinery.Sell data, MessageCreateEventArgs e, DiscordAttachment attachment, string recordId)
+        public static DiscordEmbed RefinerySellEmbed(RefineryTerminal_SellScreenRecord data, MessageCreateEventArgs e, DiscordAttachment attachment, int recordId)
         {
             var _userName = e.Author.Username;
             var _userDiscriminator = e.Author.Discriminator;
@@ -20,7 +21,7 @@ namespace sctm.services.discordBot
             var _ret = new DiscordEmbedBuilder
             {
                 Title = $"New Refinery Sale Option by {_userName}",
-                Description = $"**{_userName}** is showing an option to sell **{data.UnrefinedCargo}**scu of mined materials to the refinery for a gross profit of **{data.TotalValue}**aUEC.\nUpon completing this sale **{data.TotalValue}**xp will be awarded to the player, team, and org.",
+                Description = $"**{_userName}** is showing an option to sell **{data.UnrefinedMaterials}**cSCU of mined materials to the refinery for a gross profit of **{data.UnrefinedMaterialValue}**aUEC.\nUpon completing this sale **{data.UnrefinedMaterialValue}**xp will be awarded to the player, team, and org.",
                 ThumbnailUrl = _userAvatarUrl,
                 ImageUrl = attachment.Url,
                 Color = DiscordColor.Yellow,
@@ -30,12 +31,12 @@ namespace sctm.services.discordBot
             //.AddField($"**{_channelName}**", ":second_place:**Rank 27** [**1M**xp]")
             //.AddField($"**{_userName}#{_userDiscriminator}**", ":trophy:**Rank 1** [**27,324**xp]")
             .AddField($"Ship", data.ShipIdentifier)
-            .AddField($"Total Value *({data.Items.Count} item types)*", $"**{data.TotalValue}** aUEC")
+            .AddField($"Total Value *({data.Items.Count} item types)*", $"**{data.UnrefinedMaterialValue}** aUEC")
             ;
 
             foreach (var item in data.Items)
             {
-                _ret.AddField($"**{item.Name}**", $"**{item.Value}** aUEC\n*({item.Amount} %)*", true);
+                _ret.AddField($"**{item.Name}** ({item.LoadPercentage}%)", $"{item.cSCU}cSCU @ {item.ValuePercSCU} = {item.TotalValue}", true);
             }
 
 
