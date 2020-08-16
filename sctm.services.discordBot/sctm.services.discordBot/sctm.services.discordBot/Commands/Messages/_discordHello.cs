@@ -16,6 +16,7 @@ namespace sctm.services.discordBot.Commands.Messages
 {
     public partial class MessageCommands
     {
+        /*
         [Command("hello")] // let's define this method as a command
         [Description("Link your Discord account to your SCTM account")] // this will be displayed to tell users what this command does when they invoke help
         [Aliases("link")] // alternative names for the command
@@ -68,6 +69,7 @@ namespace sctm.services.discordBot.Commands.Messages
                 await ctx.RespondAsync("Sorry, something just went wrong: " + (await _result.Content.ReadAsStringAsync()));
             }
         }
+        */
     }
 
     public class DiscordHelloRequest_POST

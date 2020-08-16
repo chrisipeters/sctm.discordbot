@@ -7,6 +7,7 @@ namespace sctm.services.discordBot.Commands.Messages
 {
     public partial class MessageCommands
     {
+        /*
         [Command("team")] // let's define this method as a command
         [Description("Get your Team Code")] // this will be displayed to tell users what this command does when they invoke help
         [Aliases("org", "channel")] // alternative names for the command
@@ -19,5 +20,6 @@ namespace sctm.services.discordBot.Commands.Messages
             // respond with ping
             await ctx.RespondAsync(null,false,Embeds.TeamCode(ctx));
         }
+        */
     }
 }
