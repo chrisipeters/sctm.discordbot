@@ -26,12 +26,13 @@ namespace sctm.services.discordBot
             var _orgId = e.Message.Channel.GuildId;
 
             var _client = await _services.GetSCTMClient();
-
+            if (_client == null) Log.Error("{logAction}: unable to get SCTM client", _logAction);
 
             // prepare image
             var form = new MultipartFormDataContent();
             if (_client != null)
             {
+                Log.Information("{logAction}: getting image to process", _logAction);
                 try
                 {
                     MemoryStream memStream = null;
@@ -78,6 +79,8 @@ namespace sctm.services.discordBot
                     form = new MultipartFormDataContent();
                     form.Add(content);
 
+                    Log.Information("{logAction}: image ready", _logAction);
+
                     _simpleClient.Dispose();
                 }
                 catch (Exception ex)
@@ -94,13 +97,17 @@ namespace sctm.services.discordBot
             if (_client != null)
             {
                 var _url = _config["SCTM:Urls:Uploads"].TrimEnd('/') + $"/images/terminal?user={_userId}&team={_teamId}&organization={_orgId}";
+                Log.Information("{logAction}: making call to: {url}", _logAction, _url);
 
                 var _res = await Services.MakeHttpPostCall(_client, _url, form);
 
                 var _content = await _res.Content.ReadAsStringAsync();
 
-                if(_res.IsSuccessStatusCode)
+                Log.Information("{logAction}: UploadsAPI call resulted in: {result} with content of {@_content}", _logAction, _res.StatusCode);
+
+                if (_res.IsSuccessStatusCode)
                 {
+                    
                     _data = JsonConvert.DeserializeObject<TradingConsole_POST_Result>(_content);
                 } else
                 {
@@ -124,6 +131,7 @@ namespace sctm.services.discordBot
             DiscordEmbed _embed = null;
             if (_data != null)
             {
+                Log.Information("{logAction}: Preparing embed for data: {@data}", _logAction, _data);
                 switch (_data.ImagaData.ScreenshotType)
                 {
                     case ScreenShotTypes.Unknown:
@@ -150,7 +158,8 @@ namespace sctm.services.discordBot
                         break;
                 }
 
-                if(_embed != null) await e.Message.RespondAsync(null, false, _embed);
+                Log.Information("{logAction}: sending embed for {screenshotType}", _logAction, _data.ImagaData.ScreenshotType.ToString());
+                if (_embed != null) await e.Message.RespondAsync(null, false, _embed);
             }
 
         }
