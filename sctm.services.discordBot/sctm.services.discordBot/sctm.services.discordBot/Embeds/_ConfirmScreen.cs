@@ -1,12 +1,12 @@
 ﻿using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
-using sctm.connectors.sctmDB.Models.OCREntries;
+using sctm.connectors.sctmDB.Models.DBModels.Screenshots.OCR.TradeConsole;
 
 namespace sctm.services.discordBot
 {
     public partial class Embeds
     {
-        public static DiscordEmbed RefineryConfirm(RefineryTerminal_ConfirmScreenRecord data, MessageCreateEventArgs e, DiscordAttachment attachment, int recordId)
+        public static DiscordEmbed ConfirmScreen(ConfirmScreen data, MessageCreateEventArgs e, DiscordAttachment attachment, int recordId)
         {
             var _userName = e.Author.Username;
             var _userDiscriminator = e.Author.Discriminator;
@@ -24,7 +24,7 @@ namespace sctm.services.discordBot
                 ThumbnailUrl = _userAvatarUrl,
                 ImageUrl = attachment.Url,
                 Color = DiscordColor.Yellow,
-                Footer = new DiscordEmbedBuilder.EmbedFooter { Text = $"Star Citizen Tools by SC TradeMasters >> Terminals_RefinerySellConfirm:{recordId}", IconUrl = e.Client.CurrentUser.AvatarUrl }
+                Footer = new DiscordEmbedBuilder.EmbedFooter { Text = $"Star Citizen Tools by SC TradeMasters >> ConfirmScreen:{recordId}>>CreateScreen:{data.CreateScreenId}", IconUrl = e.Client.CurrentUser.AvatarUrl }
             }
             //.AddField($"**{_guildName}**", ":first_place:**Rank 3** [**1.2B**xp]")
             //.AddField($"**{_channelName}**", ":second_place:**Rank 27** [**1M**xp]")

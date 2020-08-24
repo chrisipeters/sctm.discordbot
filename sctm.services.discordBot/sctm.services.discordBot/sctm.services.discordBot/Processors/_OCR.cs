@@ -2,11 +2,11 @@
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using Newtonsoft.Json;
-using sctm.connectors.sctmDB.Models.OCREntries;
+using sctm.connectors.sctmDB.Models.DBModels.Screenshots.OCR.TradeConsole;
+using sctm.connectors.sctmDB.Models.Models.Screenshots;
 using sctm.services.discordBot.Models;
 using Serilog;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -96,7 +96,7 @@ namespace sctm.services.discordBot
             TradingConsole_POST_Result _data = null;
             if (_client != null)
             {
-                var _url = _config["SCTM:Urls:Uploads"].TrimEnd('/') + $"/images/terminal?user={_userId}&team={_teamId}&organization={_orgId}";
+                var _url = _config["SCTM:Urls:Uploads"].TrimEnd('/') + $"/images/tradeconsole?user={_userId}&team={_teamId}&organization={_orgId}";
                 Log.Information("{logAction}: making call to: {url}", _logAction, _url);
 
                 var _res = await Services.MakeHttpPostCall(_client, _url, form);
@@ -132,33 +132,22 @@ namespace sctm.services.discordBot
             if (_data != null)
             {
                 Log.Information("{logAction}: Preparing embed for data: {@data}", _logAction, _data);
-                switch (_data.ImagaData.ScreenshotType)
-                {
-                    case ScreenShotTypes.Unknown:
-                        break;
-                    case ScreenShotTypes.TradeConsole_BUY:
-                        break;
-                    case ScreenShotTypes.TradeConsole_SELL:
-                        break;
-                    case ScreenShotTypes.TradeConsole_BUYConfirm:
-                        break;
-                    case ScreenShotTypes.TradeConsole_SELLConfirm:
-                        break;
-                    case ScreenShotTypes.FleetManager:
-                        break;
-                    case ScreenShotTypes.RefineryTerminal_SELL:
-                        var _rSellData = JsonConvert.DeserializeObject<RefineryTerminal_SellScreenRecord>(_data.DatabaseRecord.ToString());
-                        _embed = Embeds.RefinerySellEmbed(_rSellData, e, e.Message.Attachments[0], _rSellData.Id);
-                        break;
-                    case ScreenShotTypes.RefineryTerminal_SELLConfirm:
-                        var _rConfirmData = JsonConvert.DeserializeObject<RefineryTerminal_ConfirmScreenRecord>(_data.DatabaseRecord.ToString());
-                        _embed = Embeds.RefineryConfirm(_rConfirmData, e, e.Message.Attachments[0], _rConfirmData.Id);
-                        break;
-                    default:
-                        break;
-                }
 
-                Log.Information("{logAction}: sending embed for {screenshotType}", _logAction, _data.ImagaData.ScreenshotType.ToString());
+
+                if(_data.Image.Data.ScreenshotType == ScreenShotTypes.CreateScreen)
+                {
+                    // create screen
+                    var _dbRecord = JsonConvert.DeserializeObject<CreateScreen>(_data.DatabaseRecord.ToString());
+                    _embed = Embeds.CreateScreen(_dbRecord, e, e.Message.Attachments[0], _dbRecord.Id);
+
+                } else if(_data.Image.Data.ScreenshotType == ScreenShotTypes.ConfirmScreen)
+                {
+                    // Confirm screen
+                    var _dbRecord = JsonConvert.DeserializeObject<ConfirmScreen>(_data.DatabaseRecord.ToString());
+                    _embed = Embeds.ConfirmScreen(_dbRecord, e, e.Message.Attachments[0], _dbRecord.Id);
+                }
+                
+                Log.Information("{logAction}: sending embed for {screenshotType}", _logAction, _data.Image.Data.ScreenshotType.ToString());
                 if (_embed != null) await e.Message.RespondAsync(null, false, _embed);
             }
 
