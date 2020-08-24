@@ -103,7 +103,7 @@ namespace sctm.services.discordBot
 
                 var _content = await _res.Content.ReadAsStringAsync();
 
-                Log.Information("{logAction}: UploadsAPI call resulted in: {result} with content of {@_content}", _logAction, _res.StatusCode);
+                Log.Information("{logAction}: UploadsAPI call resulted in: {result} with content of {@content}", _logAction, _res.StatusCode, _content);
 
                 if (_res.IsSuccessStatusCode)
                 {
