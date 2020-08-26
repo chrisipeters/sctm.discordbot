@@ -21,12 +21,27 @@ namespace sctm.services.discordBot
             var _logAction = "ProcessWithOCR";
             Log.Information($"{_logAction} -  command called");
 
+            try
+            {
+                await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":mag:"));
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+            
+
             var _userId = e.Author.Id;
             var _teamId = e.Message.ChannelId;
             var _orgId = e.Message.Channel.GuildId;
 
             var _client = await _services.GetSCTMClient();
-            if (_client == null) Log.Error("{logAction}: unable to get SCTM client", _logAction);
+            if (_client == null)
+            {
+                Log.Error("{logAction}: unable to get SCTM client", _logAction);
+                await e.Message.DeleteOwnReactionAsync(DiscordEmoji.FromName(discord, ":mag:"));
+            }
 
             // prepare image
             var form = new MultipartFormDataContent();
@@ -86,7 +101,8 @@ namespace sctm.services.discordBot
                 catch (Exception ex)
                 {
                     Log.Error(ex, "Unable to create call content");
-                    await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
+                    await e.Message.DeleteOwnReactionAsync(DiscordEmoji.FromName(discord, ":mag:"));
+                    await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":cry:"));
                     return;
                 }
             }
@@ -105,6 +121,8 @@ namespace sctm.services.discordBot
 
                 Log.Information("{logAction}: UploadsAPI call resulted in: {result} with content of {@content}", _logAction, _res.StatusCode, _content);
 
+                await e.Message.DeleteOwnReactionAsync(DiscordEmoji.FromName(discord, ":mag:"));
+
                 if (_res.IsSuccessStatusCode)
                 {
                     
@@ -116,12 +134,13 @@ namespace sctm.services.discordBot
                     {
                         if(_content.Contains("I'm sorry Dave, I cannot process this file for you again"))
                         {
-                            await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":cry:"));
+                            await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":no_entry_sign:"));
                         }
                     }
                     catch (Exception ex)
                     {
                         Log.Error(ex, "{logAction}: Exception encountered making call to uploads API", _logAction);
+                        await e.Message.CreateReactionAsync(DiscordEmoji.FromName((DiscordClient)e.Client, ":cry:"));
                     }
                 }
                 _client.Dispose();
