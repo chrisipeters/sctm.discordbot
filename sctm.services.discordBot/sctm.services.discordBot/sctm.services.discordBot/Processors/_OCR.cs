@@ -2,8 +2,8 @@
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using Newtonsoft.Json;
-using sctm.connectors.sctmDB.Models.DBModels.Screenshots.OCR.TradeConsole;
-using sctm.connectors.sctmDB.Models.Models.Screenshots;
+using sctm.connectors.sctmDB.Models.Screenshots;
+using sctm.connectors.sctmDB.Models.Screenshots.OCR.TradeConsole;
 using sctm.services.discordBot.Models;
 using Serilog;
 using System;
@@ -153,20 +153,20 @@ namespace sctm.services.discordBot
                 Log.Information("{logAction}: Preparing embed for data: {@data}", _logAction, _data);
 
 
-                if(_data.Image.Data.ScreenshotType == ScreenShotTypes.CreateScreen)
+                if(_data.ImageType == ScreenShotTypes.CreateScreen)
                 {
                     // create screen
-                    var _dbRecord = JsonConvert.DeserializeObject<CreateScreen>(_data.DatabaseRecord.ToString());
+                    var _dbRecord = JsonConvert.DeserializeObject<AddCreateScreen_Record>(_data.Record.ToString());
                     _embed = Embeds.CreateScreen(_dbRecord, e, e.Message.Attachments[0], _dbRecord.Id);
 
-                } else if(_data.Image.Data.ScreenshotType == ScreenShotTypes.ConfirmScreen)
+                } else if(_data.ImageType == ScreenShotTypes.ConfirmScreen)
                 {
                     // Confirm screen
-                    var _dbRecord = JsonConvert.DeserializeObject<ConfirmScreen>(_data.DatabaseRecord.ToString());
-                    _embed = Embeds.ConfirmScreen(_dbRecord, e, e.Message.Attachments[0], _dbRecord.Id);
+                    var _dbRecord = JsonConvert.DeserializeObject<AddConfirmScreen_Record>(_data.Record.ToString());
+                    _embed = await Embeds.ConfirmScreen(_data, e, e.Message.Attachments[0]);
                 }
                 
-                Log.Information("{logAction}: sending embed for {screenshotType}", _logAction, _data.Image.Data.ScreenshotType.ToString());
+                Log.Information("{logAction}: sending embed for {screenshotType}", _logAction, _data.ImageType.ToString());
                 if (_embed != null) await e.Message.RespondAsync(null, false, _embed);
             }
 

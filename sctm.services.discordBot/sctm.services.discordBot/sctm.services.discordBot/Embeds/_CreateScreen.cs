@@ -1,13 +1,13 @@
 ﻿using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
-using sctm.connectors.sctmDB.Models.DBModels.Screenshots.OCR.TradeConsole;
+using sctm.services.discordBot.Models;
 using System;
 
 namespace sctm.services.discordBot
 {
     public partial class Embeds
     {
-        public static DiscordEmbed CreateScreen(CreateScreen data, MessageCreateEventArgs e, DiscordAttachment attachment, int recordId)
+        public static DiscordEmbed CreateScreen(AddCreateScreen_Record data, MessageCreateEventArgs e, DiscordAttachment attachment, int recordId)
         {
             var _userName = e.Author.Username;
             var _userDiscriminator = e.Author.Discriminator;
