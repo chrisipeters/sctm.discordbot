@@ -12,7 +12,7 @@ namespace sctm.services.discordBot
     {
         public static async Task<DiscordEmbed> Leaderboard_Mining(CommandContext ctx, DiscordUser bot, Leaderboards_Result leaderboard)
         {
-            var _profession = leaderboard.Results.Professions.Where(i => i.Name.ToLower() == "mining").FirstOrDefault();
+            var _profession = leaderboard?.Results.Professions.Where(i => i.Name.ToLower() == "mining").FirstOrDefault();
             if (_profession == null) return null;
 
             var _teams = _profession.Entrants.OrderByDescending(i => i.EarnedCredits);
