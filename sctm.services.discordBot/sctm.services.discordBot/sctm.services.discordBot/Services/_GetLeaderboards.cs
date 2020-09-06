@@ -1,9 +1,5 @@
-﻿using DSharpPlus;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Exceptions;
-using DSharpPlus.Entities;
-using DSharpPlus.EventArgs;
-using DSharpPlus.Net.WebSocket;
+﻿using Newtonsoft.Json;
+using sctm.services.discordBot.Models;
 using Serilog;
 using System.Threading.Tasks;
 
@@ -11,88 +7,57 @@ namespace sctm.services.discordBot
 {
     public partial class Services
     {
-        public (DiscordClient client, CommandsNextModule cNext) CreateDiscordClient(DependencyCollection dependencies)
+        public async Task<Leaderboards_Result> GetLeaderboards_Global()
         {
-            _discord = new DiscordClient(_cfg);
+            var _url = _config["SCTM:Urls:Leaderboards"].TrimEnd('/') + $"/global";
+            var _data = await GetLeaderboards(_url);
+            return _data;
+        }
 
-            _discord.SetWebSocketClient<WebSocket4NetCoreClient>();
+        public async Task<Leaderboards_Result> GetLeaderboards_Organization(string organizationIdentifier)
+        {
+            var _url = _config["SCTM:Urls:Leaderboards"].TrimEnd('/') + $"/organizations/{organizationIdentifier}";
+            var _data = await GetLeaderboards(_url);
+            return _data;
+        }
 
-            _ccfg = new CommandsNextConfiguration
+        public async Task<Leaderboards_Result> GetLeaderboards_Player(string userIdentifier)
+        {
+            var _url = _config["SCTM:Urls:Leaderboards"].TrimEnd('/') + $"/players/{userIdentifier}";
+            var _data = await GetLeaderboards(_url);
+            return _data;
+        }
+
+
+        private async Task<Leaderboards_Result> GetLeaderboards(string url)
+        {
+            var _logAction = "GetLeaderboards";
+            Log.Information($"{_logAction} -  command called");
+
+            Leaderboards_Result _ret = null;
+
+            var _client = await GetSCTMClient();
+            if (_client == null)
             {
-                // let's use the string prefix defined in config.json
-                StringPrefix = _config["Discord:CommandPrefix"],
-
-                // enable responding in direct messages
-                EnableDms = true,
-
-                // enable mentioning the bot as a command prefix
-                EnableMentionPrefix = true,
-                Dependencies = dependencies
-            };
-
-            
-
-            _commands = _discord.UseCommandsNext(_ccfg);
-
-            _commands.CommandExecuted += Commands_CommandExecuted;
-            _commands.CommandErrored += Commands_CommandErrored;
-
-            return (_discord, _commands);
-        }
-
-        private Task Client_Ready(ReadyEventArgs e)
-        {
-            Log.Information("Client is ready to process events");
-
-            return Task.CompletedTask;
-        }
-
-        private Task Client_GuildAvailable(GuildCreateEventArgs e)
-        {
-            Log.Information($"Guild available: {e.Guild.Name}");
-
-            return Task.CompletedTask;
-        }
-
-        private Task Client_ClientError(ClientErrorEventArgs e)
-        {
-            Log.Error(e.Exception, $"Client: {e.Client.CurrentApplication.Name} experienced an exception error");
-
-            return Task.CompletedTask;
-        }
-
-        private Task Commands_CommandExecuted(CommandExecutionEventArgs e)
-        {
-            Log.Information($"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'");
-
-            return Task.CompletedTask;
-        }
-
-        private async Task Commands_CommandErrored(CommandErrorEventArgs e)
-        {
-            Log.Error(e.Exception, $"Command: {e.Command.Name}  experienced an exception error");
-
-            // let's check if the error is a result of lack
-            // of required permissions
-            if (e.Exception is ChecksFailedException ex)
-            {
-                // yes, the user lacks required permissions, 
-                // let them know
-
-                var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
-
-                // let's wrap the response into an embed
-                var embed = new DiscordEmbedBuilder
-                {
-                    Title = "Access denied",
-                    Description = $"{emoji} You do not have the permissions required to execute this command.",
-                    Color = new DiscordColor(0xFF0000) // red
-                    // there are also some pre-defined colors available
-                    // as static members of the DiscordColor struct
-                };
-                await e.Context.RespondAsync("", embed: embed);
+                Log.Error("{logAction}: unable to get SCTM client", _logAction);
+                return null;
             }
 
+            var _res = await _client.GetAsync(url);
+
+            var _content = await _res.Content.ReadAsStringAsync();
+
+            if(!_res.IsSuccessStatusCode)
+            {
+                Log.Error("{logAction}: error received from {url} - {@content}",_logAction,url, _content);
+                _ret = null;
+            } else
+            {
+                _ret = JsonConvert.DeserializeObject<Leaderboards_Result>(_content);
+            }
+
+            _client.Dispose();
+            return _ret;
         }
     }
 }

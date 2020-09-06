@@ -45,15 +45,53 @@ namespace sctm.services.discordBot.Commands.Messages
 
             if (_request.IsSuccessStatusCode)
             {
-                
+
+                var _leaderboards = await _services.GetLeaderboards_Organization(ctx.Message.Channel.GuildId.ToString());
+
                 var _ships = JsonConvert.DeserializeObject<List<Ship>>(_content);
 
                 foreach (var ship in _ships)
                 {
-                    var _embed = Embeds.Ship(ship, ctx.Client.CurrentUser);
+                    string _leaderName = null;
+                    string _leaderAvatarUrl = null;
+                    ulong? _leaderProfit = null;
+                    ulong? _leaderXP = null;
+                    int? _leaderRecords = null;
+
+                    if (_leaderboards?.Results.Ships != null)
+                    {
+                        var _shipXp = _leaderboards.Results.Ships.Where(i => i.Name.ToLower() == $"{ship.Manufacturer.KnownAs.ToLower()} {ship.ModelName.ToLower()}").FirstOrDefault();
+                        if(_shipXp != null)
+                        {
+                            foreach (var team in _shipXp.Entrants)
+                            {
+                                var _topPlayer = team.TopPlayers.OrderByDescending(i => i.EarnedCredits).FirstOrDefault();
+                                if (_topPlayer != null && (_leaderProfit == null || _topPlayer.EarnedCredits > _leaderProfit))
+                                {
+                                    try
+                                    {
+                                        var _player = await ctx.Guild.GetMemberAsync(ulong.Parse(_topPlayer.Name));
+                                        _leaderName = _player.Username;
+                                        _leaderProfit = _topPlayer.EarnedCredits;
+                                        _leaderAvatarUrl = _player.AvatarUrl;
+                                        _leaderXP = _topPlayer.Amount;
+                                        _leaderRecords = _topPlayer.Entries;
+                                    }
+                                    catch (System.Exception)
+                                    {
+                                        // logging
+                                    }
+                                }
+                            }
+                        }
+                        
+                    }
+
+                    var _embed = Embeds.Ship(ship, ctx.Client.CurrentUser, _leaderName, _leaderAvatarUrl, _leaderProfit, _leaderXP, _leaderRecords);
                     await ctx.Message.RespondAsync(null, false, _embed);
                 }
-            } else
+            }
+            else
             {
                 Log.Error("{logAction}: unsuccessful API call: {@content}", _logAction, _content);
                 await ctx.Message.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":cry:"));

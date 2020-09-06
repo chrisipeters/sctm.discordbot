@@ -36,7 +36,7 @@ namespace sctm.services.discordBot
                     Footer = new DiscordEmbedBuilder.EmbedFooter { Text = $"SCTradeMasters.com >> ConfirmScreen:{_record.Id}>>CreateScreen:{(_record.CreateScreenId ?? 0)}", IconUrl = e.Client.CurrentUser.AvatarUrl }
                 }
                 .AddField($"Org: {e.Message.Channel.Guild.Name}", $"Team: {e.Message.Channel.Name}", false)
-                .AddField($":rocket: {_record.ShipIdentifier}", $"{data.Experience?.Ship.Entry.Proficiency.ToString() ?? "No Proficiency"} - {data.Experience?.Ship.New.ShipXP.ToString() ?? "No awarded "}xp (+{data.Experience?.Ship.Entry.Awarded.ToString() ?? "0"})", true);
+                .AddField($":rocket: {_record.ShipIdentifier}", $"{data.Experience?.Ship.New.ShipXP.ToString() ?? "No awarded "}xp (+{data.Experience?.Ship.Entry.Awarded.ToString() ?? "0"})", true);
 
                 if (data?.Experience?.Professions != null) foreach (var prof in data.Experience.Professions)
                     {
