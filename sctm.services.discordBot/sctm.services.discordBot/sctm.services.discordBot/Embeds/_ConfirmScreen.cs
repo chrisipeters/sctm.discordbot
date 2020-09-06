@@ -54,8 +54,6 @@ namespace sctm.services.discordBot
 
                     _ret.AddField(":gear: Tasks", _taskString, false);
                 }
-
-                _ret.AddField($"Season 1 - Ends 1 Oct, 2020", $"Ship Focus: **GREYCAT ROC**\nMining Focus: **Hadenite**", false);
             }
             catch (Exception ex)
             {
