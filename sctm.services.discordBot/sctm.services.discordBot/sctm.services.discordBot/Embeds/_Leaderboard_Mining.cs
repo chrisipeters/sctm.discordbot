@@ -33,7 +33,7 @@ namespace sctm.services.discordBot
                 }
             }
 
-            var _duration = (leaderboard.Season.Dates.End - leaderboard.Season.Dates.Start);
+            var _duration = (leaderboard.Season.Dates.End - DateTime.Now);
 
             var _timeLeft = (_duration.TotalDays >= 2) ? $"{Math.Round(_duration.TotalDays,0)} days" :$"{Math.Round(_duration.TotalHours,1)} hours";
 
