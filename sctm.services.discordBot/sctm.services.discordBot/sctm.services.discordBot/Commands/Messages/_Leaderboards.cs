@@ -23,10 +23,15 @@ namespace sctm.services.discordBot.Commands.Messages
                 {
                     var _embed = await Embeds.Leaderboard_Mining(ctx, ctx.Client.CurrentUser, _data);
 
-                    await ctx.Message.DeleteOwnReactionAsync(DiscordEmoji.FromName(ctx.Client, ":mag:"));
+                    
 
                     await ctx.RespondAsync(null, false, _embed);
+                } else
+                {
+                    await ctx.Message.RespondAsync("There is no active season running - Previous season results will be available on our website soon");
                 }
+
+                await ctx.Message.DeleteOwnReactionAsync(DiscordEmoji.FromName(ctx.Client, ":mag:"));
             }
         }        
     }
